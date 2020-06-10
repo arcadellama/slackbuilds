@@ -1,0 +1,6 @@
+[submodule "slackbuilds"]
+	path = slackbuilds
+	url = https://gitlab.com/gbschenkel/slackbuilds.git
+[submodule "gbschenkel"]
+	path = gbschenkel
+	url = https://gitlab.com/gbschenkel/slackbuilds.git
