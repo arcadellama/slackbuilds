@@ -1,6 +1,104 @@
 #!/bin/bash
-#
 
-export TERM=xterm
+NAME=nzbdrone
+DESC="Sonarr"
+MONO=$(which mono)
+BASE=/usr/share/$NAME
+DATADIR=/var/lib/$NAME
 
-su -m $RUNAS -s /bin/sh -c "exec /usr/bin/mono --debug /opt/NzbDrone/NzbDrone.exe -nobrowser -data=/var/lib/NzbDrone &" >/dev/null 2>&1
+DAEMON=${BASE}/NzbDrone.exe
+DAEMONOPTS="-nobrowser -data=${APPDATA}"
+
+PIDDIR=${BASE}
+PIDFILE=${PIDDIR}/${NAME}.pid
+
+USER=${USER:-nzbdrone}
+
+RUNNING=$(ps -ef | grep "${MONO} ${DAEMON}" | grep -v grep | wc -l)
+
+set -e
+
+if [ ! -x $MONO ]; then
+    echo "$DAEMON not exectable." 2>&1;
+    exit 1
+fi
+
+if [ ! -r $DAEMON ]; then
+    echo "Cannot read: $DAEMON." 2>&1;
+    exit 1
+fi
+
+if [ ! -d $DATADIR ]; then
+    echo "$DATADIR does not exist." 2>&1
+    exit 1
+fi
+
+case "$1" in
+    start)
+        if [ $RUNNING -gt 0 ]; then
+            echo "${DESC} is already running."
+            exit 0
+        fi
+
+        if [ -e $PIDFILE ]; then
+            PID="$(cat $PIDFILE)"
+            if ! kill -0 $PID > /dev/null 2>&1;then
+                echo "Removing stale $PIDFILE"
+                rm $PIDFILE
+            fi
+        fi
+
+        echo "Starting ${DESC}..." 
+
+        # Mono is very picky about the console
+        export TERM=xterm
+        
+        su -m $USER -s /bin/sh -c "exec $MONO --debug $DAEMON $DAEMON_OPTS &" >/dev/null 2>&1
+        ;;
+
+    stop)
+        if [ $RUNNING -eq 0 ]; then
+            echo "$DESC is not running."
+            exit 0
+        fi
+        
+        echo "Shutting down $DESC."
+
+        #Ask nicely first
+        kill -15 $(cat $PIDFILE)
+
+        sleep 5
+
+        #Let's ramp it up a bit
+        if [ "$(pgrep -f '$DAEMON')" != "" ]; then
+            kill -9 $(pgrep -f '$DAEMON')
+            sleep 2
+        fi
+        ;;
+    
+    restart)
+        $0 stop
+        sleep 5
+        $0 start
+        ;;
+
+    status)
+        if [ $RUNNING -eq 0]; then
+            echo "$DESC is not running."
+        elif [ $RUNNING -gt 0]; then
+            echo "$DESC is running."
+        elif
+            [ "$(pgrep -f '$DAEMON')" != "$(cat $PIDFILE)"]; then
+            echo "There is more than one instance of $DESC currently running." 2>&1
+            exit 1;
+        fi
+        ;;
+
+    *)
+        echo "Usage: $0 {start|stop|restart|status}"
+        exit 1;
+        ;;
+esac
+
+exit 0
+
