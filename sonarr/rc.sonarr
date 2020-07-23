@@ -1,79 +1,90 @@
 #!/bin/bash
 
 NAME=nzbdrone
-DESC="Sonarr"
-MONO=$(which mono)
-BASE=/usr/share/$NAME
-DATADIR=/var/lib/$NAME
+DESC=Sonarr
+MONO=/usr/bin/mono
+BASE=/usr/share/${NAME}
+DATADIR=/var/lib/${NAME}
 
 DAEMON=${BASE}/NzbDrone.exe
-DAEMONOPTS="-nobrowser -data=${APPDATA}"
+DAEMONOPTS="-nobrowser -data=${DATADIR}"
 
 PIDDIR=${BASE}
 PIDFILE=${PIDDIR}/${NAME}.pid
 
 USER=${USER:-nzbdrone}
+GROUP=${GROUP:-nzbdrone}
 
 RUNNING=$(ps -ef | grep "${MONO} ${DAEMON}" | grep -v grep | wc -l)
 
 set -e
 
-if [ ! -x $MONO ]; then
-    echo "$DAEMON not exectable." 2>&1;
+if [ ! -x ${MONO} ]; then
+    echo "${MONO} not exectable." 2>&1;
     exit 1
 fi
 
-if [ ! -r $DAEMON ]; then
-    echo "Cannot read: $DAEMON." 2>&1;
+if [ ! -r ${DAEMON} ]; then
+    echo "Cannot read: ${DAEMON}." 2>&1;
     exit 1
 fi
 
-if [ ! -d $DATADIR ]; then
-    echo "$DATADIR does not exist." 2>&1
+if [ ! -d ${DATADIR} ]; then
+    echo "${DATADIR} does not exist." 2>&1
     exit 1
 fi
 
 case "$1" in
     start)
-        if [ $RUNNING -gt 0 ]; then
+        if [ ${RUNNING} -gt 0 ]; then
             echo "${DESC} is already running."
             exit 0
         fi
 
-        if [ -e $PIDFILE ]; then
-            PID="$(cat $PIDFILE)"
-            if ! kill -0 $PID > /dev/null 2>&1;then
-                echo "Removing stale $PIDFILE"
-                rm $PIDFILE
+        if [ -e ${PIDFILE} ]; then
+            PID="$(cat ${PIDFILE})"
+            if ! kill -0 ${PID} > /dev/null 2>&1;then
+                echo "Removing stale ${PIDFILE}"
+                rm ${PIDFILE}
             fi
         fi
 
         echo "Starting ${DESC}..." 
 
         # Mono is very picky about the console
-        export TERM=xterm
-        
-        su -m $USER -s /bin/sh -c "exec $MONO --debug $DAEMON $DAEMON_OPTS &" >/dev/null 2>&1
+        if [ ${TERM} = "xterm" ]; then
+            export TERM=xterm
+        fi
+
+        su -m ${USER}:${GROUP} -s /bin/sh -c "exec $MONO $DAEMON $DAEMON_OPTS &" >/dev/null 2>&1
         ;;
 
     stop)
-        if [ $RUNNING -eq 0 ]; then
-            echo "$DESC is not running."
+        if [ ${RUNNING} -eq 0 ]; then
+            echo "${DESC} is not running."
             exit 0
         fi
         
-        echo "Shutting down $DESC."
+        echo "Shutting down ${DESC}..."
 
         #Ask nicely first
-        kill -15 $(cat $PIDFILE)
+        kill -15 $(cat ${PIDFILE})
 
         sleep 5
 
         #Let's ramp it up a bit
-        if [ "$(pgrep -f '$DAEMON')" != "" ]; then
-            kill -9 $(pgrep -f '$DAEMON')
+        if [ "$(pgrep -f '${DAEMON}')" != "" ]; then
+            kill -9 $(pgrep -f '${DAEMON}')
             sleep 2
         fi
+
+        if [ -e $PIDFILE ]; then
+            PID="$(cat $PIDFILE)"
+            if ! kill -0 $PID > /dev/null 2>&1;then
+                rm $PIDFILE
+            fi
+        fi
+echo "done."
         ;;
     
     restart)
@@ -85,12 +96,13 @@ case "$1" in
     status)
         if [ $RUNNING -eq 0]; then
             echo "$DESC is not running."
-        elif [ $RUNNING -gt 0]; then
-            echo "$DESC is running."
-        elif
-            [ "$(pgrep -f '$DAEMON')" != "$(cat $PIDFILE)"]; then
-            echo "There is more than one instance of $DESC currently running." 2>&1
+
+        elif [ "$(pgrep -f '$DAEMON')" != "$(cat $PIDFILE)"]; then
+            echo "There is more than one instance of $DESC running." 2>&1
             exit 1;
+
+        else
+            echo "$DESC is running."
         fi
         ;;
 
