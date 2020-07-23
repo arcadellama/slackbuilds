@@ -1,21 +1,21 @@
 #!/bin/bash
 
 NAME=nzbdrone
-DESC=Sonarr
+DESC=sonarr
 MONO=/usr/bin/mono
-BASE=/usr/share/${NAME}
-DATADIR=/var/lib/${NAME}
+BASE=/usr/share/$DESC
+DATADIR=/var/lib/$DESC
 
-DAEMON=${BASE}/NzbDrone.exe
-DAEMONOPTS="-nobrowser -data=${DATADIR}"
+DAEMON=$MONO --debug $BASE/NzbDrone.exe
+DAEMONOPTS="-nobrowser -data=$DATADIR"
 
-PIDDIR=${BASE}
-PIDFILE=${PIDDIR}/${NAME}.pid
+PIDDIR=$BASE
+PIDFILE=$PIDDIR/$NAME.pid
 
-USER=${USER:-nzbdrone}
-GROUP=${GROUP:-nzbdrone}
+RUN_USER=${RUN_USER:-testuser}
+RUN_GROUP=${RUN_GROUP:-sonarr}
 
-RUNNING=$(ps -ef | grep "${MONO} ${DAEMON}" | grep -v grep | wc -l)
+RUNNING=$(ps -ef | grep "${MONO} --debug ${DAEMON}" | grep -v grep | wc -l)
 
 set -e
 
@@ -31,7 +31,7 @@ fi
 
 if [ ! -d ${DATADIR} ]; then
     echo "${DATADIR} does not exist." 2>&1
-    exit 1
+    exit change variable in another script bash1
 fi
 
 case "$1" in
@@ -47,7 +47,7 @@ case "$1" in
                 echo "Removing stale ${PIDFILE}"
                 rm ${PIDFILE}
             fi
-        fi
+            
 
         echo "Starting ${DESC}..." 
 
@@ -56,7 +56,7 @@ case "$1" in
             export TERM=xterm
         fi
 
-        su -m ${USER}:${GROUP} -s /bin/sh -c "exec $MONO $DAEMON $DAEMON_OPTS &" >/dev/null 2>&1
+        su -m $USER -s /bin/sh -c "exec $DAEMON $DAEMON_OPTS &" >/dev/null 2>&1
         ;;
 
     stop)
