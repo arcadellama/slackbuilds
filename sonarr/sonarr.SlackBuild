@@ -34,16 +34,17 @@ TMP=${TMP:-/tmp/SBo}
 PKG=$TMP/package-$PRGNAM
 OUTPUT=${OUTPUT:-/tmp}
 
-SOURCE=$OLD_PRGNAM.master.tar.gz
 RUN_USER=${RUN_USER:-$PRGNAM}
 RUN_GROUP=${RUN_GROUP:-$PRGNAM}
 
 set -e
 
 # Bail if user or group isn't valid on your system
-if ! getent passwd #RUN_USER 1>/dev/null 2>/dev/null; then
+if ! getent passwd $RUN_USER 1>/dev/null 2>/dev/null; then
     cat << EOF
+
     The user $RUN_USER isn't valid on this system.
+
     # groupadd $RUN_GROUP
     # useradd -d /var/lib/$PRGNAM -s /bin/false -g $RUN_GROUP $RUN_USER 
 
@@ -53,7 +54,7 @@ if ! getent passwd #RUN_USER 1>/dev/null 2>/dev/null; then
 
 EOF
 
-    exit 1
+  exit 1
 
 elif ! getent group $RUN_GROUP 1>/dev/null 2>/dev/null; then
     cat << EOF
@@ -67,7 +68,7 @@ elif ! getent group $RUN_GROUP 1>/dev/null 2>/dev/null; then
     # RUN_USER=foo RUN_GROUP=bar ./$PRGNAM.SlackBuild
 
 EOF
-    exit 1
+  exit 1
 fi
 
 
@@ -75,29 +76,28 @@ fi
 # and (re)create the packaging directory
 rm -rf $PKG
 mkdir -p $TMP $PKG $OUTPUT
-rm -rf $TMP/$PRGNAM-$VERSION
 
 # Change to the TMP directory
 cd $TMP || exit 1
+rm -rf $TMP/$PRGNAM-$VERSION
 
 # Extract the application source in TMP
-tar xzvf $SOURCE || exit 1
+tar xzvf $CWD/$OLD_PRGNAM.master.tar.gz -C $PROGAM-$VERSION || exit 1
 
 # Change to the application source directory
-cd $OLD_PRGNAM || exit 1
+cd $PROGAM-$VERSION || exit 1
 
 # Change owndership and permissions if necessary
 # This may not be needed in some source tarballs, but it never hurts
 chown -R root:root .
 find -L . \
-    \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
-    \( -perm 551 \) -exec chmod 755 {} \; -o \
-    \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
-    -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
-
+     \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+      -o -perm 511 \) -exec chmod 755 {} \; -o \
+      \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+      -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
 # Create program data directory
 mkdir -p $PKG/usr/share/$PRGNAM
-cp -a $CWD/$OLD_PRGNAM $PKG/usr/share/$PRGNAM
+mv $OLD_PRGNAM $PKG/usr/share/$PRGNAM
 
 # Create AppdData directory
 mkdir -p $PKG/var/lib/$PRGNAM
