@@ -1,0 +1,30 @@
+Radarr is an independent fork of Sonarr reworked for automatically downloading movies via Usenet and BitTorrent. The project was inspired by other Usenet/BitTorrent movie downloaders such as CouchPotato. It can monitor multiple RSS
+feeds for new episodes of your favorite movies and will grab, sort and rename them. It can also be configured to automatically upgrade the quality of files already downloaded when a better quality format becomes available.
+
+It is not recommended to run Radarr as root. The default user/group is
+'radarr'.
+You can either create this user like this:
+
+    # groupadd radarr
+    # useradd -d /var/lib/radarr -s /bin/false -g radarr radarr 
+
+Or you can pass a different user/group if you prefer:
+
+    # RUN_USER=foo RUN_GROUP=bar ./$PRGNAM.SlackBuild
+
+You can have Radarr start/stop automatically at boot/shutdown. In
+/etc/rc.d/rc.local add:
+
+    # Start Radarr at boot
+    if [ -x /etc/rc.d/rc.radarr ]; then
+      /etc/rc.d/rc.radarr start
+    if
+
+And in /etc/rc.d/rc.local_shutdown add:
+
+    # Stop Radarr at shutdown
+    if [ -x /etc/rc.d/rc.radarr ]; then
+      /etc/rc.d/rc.radarr stop
+    if
+
+After installing visit http://localhost:7878 to configure Radarr.
