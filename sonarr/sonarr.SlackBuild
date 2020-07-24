@@ -23,7 +23,6 @@
 #  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 PRGNAM=sonarr
-OLD_PRGNAM=NzbDrone
 VERSION=${VERSION:-2.0.0.5344}
 BUILD=${BUILD:-1}
 TAG=${TAG:-_SBo}
@@ -44,12 +43,10 @@ if ! getent passwd $RUN_USER 1>/dev/null 2>/dev/null; then
     cat << EOF
 
     The user $RUN_USER isn't valid on this system.
-
     # groupadd $RUN_GROUP
     # useradd -d /var/lib/$PRGNAM -s /bin/false -g $RUN_GROUP $RUN_USER 
 
     Or, to change the default user and group:
-
     # RUN_USER=foo RUN_GROUP=bar ./$PRGNAM.SlackBuild
 
 EOF
@@ -60,11 +57,9 @@ elif ! getent group $RUN_GROUP 1>/dev/null 2>/dev/null; then
     cat << EOF
 
     The group $RUN_GROUP isn't valid on this system.
-
     # groupadd $RUN_GROUP
 
     Or, to change the default user and group:
-
     # RUN_USER=foo RUN_GROUP=bar ./$PRGNAM.SlackBuild
 
 EOF
@@ -77,43 +72,34 @@ fi
 rm -rf $PKG
 mkdir -p $TMP $PKG $OUTPUT
 
-# Change to the TMP directory
 cd $TMP || exit 1
 rm -rf $TMP/$PRGNAM-$VERSION
 
-# Extract the application source in TMP
-tar xzvf $CWD/$OLD_PRGNAM.master.tar.gz -C $PROGAM-$VERSION || exit 1
+tar xzvf $CWD/NzbDrone.master.tar.gz -C $PROGAM-$VERSION || exit 1
 
-# Change to the application source directory
 cd $PROGAM-$VERSION || exit 1
 
-# Change owndership and permissions if necessary
-# This may not be needed in some source tarballs, but it never hurts
 chown -R root:root .
 find -L . \
      \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
       -o -perm 511 \) -exec chmod 755 {} \; -o \
       \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
       -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
-# Create program data directory
-mkdir -p $PKG/usr/share/$PRGNAM
-mv $OLD_PRGNAM $PKG/usr/share/$PRGNAM
 
-# Create AppdData directory
+mkdir -p $PKG/usr/share/$PRGNAM
+cp -ra NzbDrone $PKG/usr/share/$PRGNAM
+
 mkdir -p $PKG/var/lib/$PRGNAM
 chown $RUN_USER:$RUN_GROUP $PKG/var/lib/$PRGNAM
 chmod 770 $PKG/var/lib/$PRGNAM
 
-# Update user/group variable rc init script
 sed -i -e '/RUN_USER=${RUN_USER:-/s/'"$PRGNAM"'/'"$RUN_USER"'/' $CWD/rc.$PRGNAM
 sed -i -e '/RUN_GROUP=${RUN_GROUP:-/s/'"$PRGNAM"'/'"$RUN_GROUP"'/' $CWD/rc.$PRGNAM
 install -D -m 0755 $CWD/rc.$PRGNAM $PKG/etc/rc.d/rc.$PRGNAM.new
 
-# Put this file in /usr/doc
 mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
 cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
 
-# Create slackpkg install directory
 mkdir -p $PKG/install
 cat $CWD/slack-desc > $PKG/install/slack-desc
 cat $CWD/doinst.sh > $PKG/install/doinst.sh
