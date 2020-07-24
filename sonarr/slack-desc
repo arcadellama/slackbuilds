@@ -6,14 +6,14 @@
 # leave one space after the ':'.
 
        |-----handy-ruler------------------------------------------------------|
-radarr: Radarr
-radarr:
-radarr: Radarr is an independant fork of Sonarr reworked for automatically 
-radarr: downloading movies via Usenet and BitTorrent.
-radarr: 
-radarr: 
-radarr: The project was inspired by other Usenet/BitTorrent movie downloaders
-radarr: such as CouchPotato.
-radarr:
-radarr: https://radarr.video
-radarr:
+sonarr: sonarr (A PVR for Usenet and BitTorrent users.)
+sonarr:
+sonarr: Sonarr is a PVR for Usenet and BitTorrent users. It can monitor 
+sonarr: multiple RSS feeds for new episodes of your favorite shows and wil
+sonarr: grab, sort and rename them. It can also be configured to automatically
+sonarr: upgrade the quality of files already downloaded when a better quality
+sonarr: format becomes available.
+sonarr:
+sonarr:
+sonarr: https://sonarr.tv
+sonarr:

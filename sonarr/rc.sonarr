@@ -1,0 +1,101 @@
+#!/bin/sh
+
+PRGNAM=sonarr
+DESC=Sonarr
+DATADIR=/var/lib/$PRGNAM
+DAEMON=/usr/bin/$PRGNAM
+DAEMON_OPTS="-nobrowser -data=$DATADIR"
+
+PIDFILE=$DATADIR/PRGNAM.pid
+
+RUN_USER=${RUN_USER:-sonarr}
+RUN_GROUP=${RUN_GROUP:-sonarr}
+
+RUNNING=$(ps -ef | grep "NzbDrone.exe" | grep -v grep | wc -l)
+
+set -e
+
+
+case "$1" in
+    start)
+        if [ $RUNNING -gt 0 ]; then
+            echo "$DESC is already running."
+            exit 0
+	fi
+
+        echo "Starting $DESC..." 
+
+        if [ -e $PIDFILE ]; then
+            PID="$(cat $PIDFILE)"
+            if ! kill -0 ${PID} > /dev/null 2>&1;then
+                echo "Removing stale $PIDFILE"
+                rm -rf $PIDFILE
+            fi
+        fi
+
+        if [ ! -d $DATADIR ]; then
+            mkdir -p $DATADIR
+            chown -R $RUN_USER:$RUN_GROUP $DATADIR
+        fi
+
+        # Mono is very picky about the console
+        if [ $TERM != "xterm" ]; then
+            export TERM=xterm
+        fi
+
+        su -m $RUN_USER -s /bin/sh -c "exec $DAEMON $DAEMON_OPTS &" >/dev/null 2>&1
+
+        ;;
+
+    stop)
+        if [ $RUNNING -eq 0 ]; then
+            echo "$DESC is not running."
+            exit 0
+        fi
+        
+        echo "Shutting down $DESC..."
+
+        #Ask nicely first
+        if [ -r $PIDFILE ]; then
+		kill -15 $(cat $PIDFILE)
+		sleep 5
+	fi
+
+        #Let's ramp it up a bit
+        if [ "$(pgrep -f "NzbDrone.exe")" != "" ]; then
+            kill -9 $(pgrep -f "NzbDrone.exe")
+            sleep 2
+        fi
+
+        if [ -e $PIDFILE ]; then
+            PID="$(cat $PIDFILE)"
+            if ! kill -0 $PID > /dev/null 2>&1;then
+                rm -rf $PIDFILE
+            fi
+        fi
+	echo "done."
+        ;;
+    
+    restart)
+        $0 stop
+        sleep 5
+        $0 start
+        ;;
+
+    status)
+        if [ $RUNNING -eq 0 ]; then
+            echo "$DESC is not running."
+
+        else
+            echo "$DESC is running."
+	    exit 0
+        fi
+        ;;
+
+    *)
+        echo "Usage: $0 {start|stop|restart|status}"
+        exit 1
+        ;;
+esac
+
+exit 0

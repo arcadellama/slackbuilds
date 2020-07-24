@@ -1,0 +1,8 @@
+PRGNAM="sonarr"
+VERSION="2.0.0.5344"
+HOMEPAGE="https://sonarr.tv"
+DOWNLOAD="https://update.sonarr.tv/v2/master/mono/NzbDrone.master.2.0.0.5344.mono.tar.gz"
+MD5SUM="cad83d5f4885af1f62f802899903c6f8"
+REQUIRES="mono mediainfo sqlite3"
+MAINTAINER="Justin Teague"
+EMAIL="arcadellama at posteo dot net"

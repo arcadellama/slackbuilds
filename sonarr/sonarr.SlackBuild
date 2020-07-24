@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Slackware build script for Radarr
+# Slackware build script for Sonarr
 #
 # Copyright (c) 2020 Justin Teague <arcadellama@posteo.net>
 #
@@ -22,9 +22,9 @@
 # with this program (most likely, a file named COPYING).  If not, see
 # <https://www.gnu.org/licenses/>.
 
-PRGNAM=radarr
-SRCNAM=Radarr
-VERSION=${VERSION:-0.2.0.1504}
+PRGNAM=sonarr
+SRCNAM=NzbDrone
+VERSION=${VERSION:-2.0.0.5344}
 BUILD=${BUILD:-1}
 TAG=${TAG:-_SBo}
 ARCH=noarch
@@ -76,7 +76,7 @@ mkdir -p $TMP $PKG $OUTPUT
 cd $TMP || exit 1
 rm -rf $PRGNAM-$VERSION
 mkdir $PRGNAM-$VERSION
-tar xzvf $CWD/$SRCNAM.develop.$VERSION.linux.tar.gz -C $PRGNAM-$VERSION || exit 1
+tar xzvf $CWD/$SRCNAM.master.$VERSION.mono.tar.gz -C $PRGNAM-$VERSION || exit 1
 cd $PRGNAM-$VERSION || exit 1
 
 chown -R root:root .
