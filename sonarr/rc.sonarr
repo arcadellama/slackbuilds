@@ -1,33 +1,19 @@
 #!/bin/bash
 
-NAME=sonarr
+PRGNAM=sonarr
 DESC=Sonarr
-MONO=/usr/bin/mono
-BASE=/usr/share/$NAME
-DATADIR=/var/lib/$NAME
-
-DAEMON=$BASE/NzbDrone.exe
+DATADIR=/var/lib/$PRGNAM
+DAEMON=/usr/bin/$PRGNAM
 DAEMONOPTS="-nobrowser -data=$DATADIR"
 
-PIDDIR=$BASE
-PIDFILE=$PIDDIR/nzbdrone.pid
+PIDFILE=$DATADIR/nzbdrone.pid
 
 RUN_USER=${RUN_USER:-sonarr}
 RUN_GROUP=${RUN_GROUP:-sonarr}
 
-RUNNING=$(ps -ef | grep "$MONO --debug $DAEMON" | grep -v grep | wc -l)
+RUNNING=$(ps -ef | grep "NzbDrone.exe" | grep -v grep | wc -l)
 
 set -e
-
-if [ ! -x $MONO ]; then
-    echo "$MONO not exectable." 2>&1;
-    exit 1
-fi
-
-if [ ! -r ${DAEMON} ]; then
-    echo "Cannot read: $DAEMON." 2>&1;
-    exit 1
-fi
 
 if [ ! -d $DATADIR ]; then
     echo "$DATADIR does not exist." 2>&1
@@ -39,15 +25,14 @@ case "$1" in
         if [ $RUNNING -gt 0 ]; then
             echo "$DESC is already running."
             exit 0
-        fi
 
         if [ -e $PIDFILE ]; then
             PID="$(cat $PIDFILE)"
             if ! kill -0 ${PID} > /dev/null 2>&1;then
                 echo "Removing stale $PIDFILE"
-                rm $PIDFILE
+                rm -rf $PIDFILE
             fi
-            
+        fi
 
         echo "Starting $DESC..." 
 
@@ -56,7 +41,7 @@ case "$1" in
             export TERM=xterm
         fi
 
-        su -m $USER -s /bin/sh -c "exec $MONO --debug $DAEMON $DAEMON_OPTS &" >/dev/null 2>&1
+        su -m $USER -s /bin/sh -c "exec $DAEMON $DAEMON_OPTS &" >/dev/null 2>&1
         ;;
 
     stop)
@@ -72,15 +57,15 @@ case "$1" in
         sleep 5
 
         #Let's ramp it up a bit
-        if [ "$(pgrep -f "$DAEMON")" != "" ]; then
-            kill -9 $(pgrep -f "$DAEMON")
+        if [ "$(pgrep -f "NzbDrone.exe")" != "" ]; then
+            kill -9 $(pgrep -f "NzbDrone.exe")
             sleep 2
         fi
 
         if [ -e $PIDFILE ]; then
             PID="$(cat $PIDFILE)"
             if ! kill -0 $PID > /dev/null 2>&1;then
-                rm $PIDFILE
+                rm -rf $PIDFILE
             fi
         fi
 echo "done."
@@ -96,7 +81,7 @@ echo "done."
         if [ $RUNNING -eq 0]; then
             echo "$DESC is not running."
 
-        elif [ "$(pgrep -f "$DAEMON")" != "$(cat $PIDFILE)"]; then
+        elif [ "$(pgrep -f "NzbDrone.exe")" != "$(cat $PIDFILE)"]; then
             echo "There is more than one instance of $DESC running." 2>&1
             exit 1;
 

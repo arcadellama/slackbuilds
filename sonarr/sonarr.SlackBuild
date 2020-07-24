@@ -23,6 +23,7 @@
 #  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 PRGNAM=sonarr
+SRCNAM=NzbDrone
 VERSION=${VERSION:-2.0.0.5344}
 BUILD=${BUILD:-1}
 TAG=${TAG:-_SBo}
@@ -75,7 +76,7 @@ mkdir -p $TMP $PKG $OUTPUT
 cd $TMP || exit 1
 rm -rf $TMP/$PRGNAM-$VERSION
 
-tar xzvf $CWD/NzbDrone.master.tar.gz -C $PROGAM-$VERSION || exit 1
+tar xzvf $CWD/$SRCNAM.master.$VERSION.tar.gz -C $PROGAM-$VERSION || exit 1
 
 cd $PROGAM-$VERSION || exit 1
 
@@ -86,8 +87,16 @@ find -L . \
       \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
       -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
 
+mkdir -p $PKG/usr/{bin,share}/
 mkdir -p $PKG/usr/share/$PRGNAM
-cp -ra NzbDrone $PKG/usr/share/$PRGNAM
+cp -dpr --no-preserve=ownership $SRCNAM/* $PKG/usr/share/$PRGNAM
+
+cat <<EOT > $PKG/usr/bin/$PRGNAM
+#!/bin/sh
+$(which mono) /usr/share/$SRCNAM.exe "\$@"
+EOT
+
+chmod 755 $PKG/usr/bin/$PRGNAM
 
 mkdir -p $PKG/var/lib/$PRGNAM
 chown $RUN_USER:$RUN_GROUP $PKG/var/lib/$PRGNAM
@@ -104,6 +113,5 @@ mkdir -p $PKG/install
 cat $CWD/slack-desc > $PKG/install/slack-desc
 cat $CWD/doinst.sh > $PKG/install/doinst.sh
 
-# Make the package already!
 cd $PKG
 /sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-${VERSION}-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}
