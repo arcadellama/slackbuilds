@@ -74,11 +74,10 @@ rm -rf $PKG
 mkdir -p $TMP $PKG $OUTPUT
 
 cd $TMP || exit 1
-rm -rf $TMP/$PRGNAM-$VERSION
-
-tar xzvf $CWD/$SRCNAM.master.$VERSION.tar.gz -C $PROGAM-$VERSION || exit 1
-
-cd $PROGAM-$VERSION || exit 1
+rm -rf $PRGNAM-$VERSION
+mkdir $PRGNAM-$VERSION
+tar xzvf $CWD/$SRCNAM.master.$VERSION.mono.tar.gz -C $PRGNAM-$VERSION || exit 1
+cd $PRGNAM-$VERSION || exit 1
 
 chown -R root:root .
 find -L . \
@@ -89,11 +88,13 @@ find -L . \
 
 mkdir -p $PKG/usr/{bin,share}/
 mkdir -p $PKG/usr/share/$PRGNAM
-cp -dpr --no-preserve=ownership $SRCNAM/* $PKG/usr/share/$PRGNAM
+cp -a $SRCNAM/* $PKG/usr/share/$PRGNAM
 
 cat <<EOT > $PKG/usr/bin/$PRGNAM
 #!/bin/sh
-$(which mono) /usr/share/$SRCNAM.exe "\$@"
+if [ -x /usr/bin/mono ] && [ -e /usr/share/$PRGNAM/$SRCNAM.exe ]; then
+  /usr/bin/mono --debug /usr/share/$PRGNAM/$SRCNAM.exe "\$@"
+fi
 EOT
 
 chmod 755 $PKG/usr/bin/$PRGNAM
