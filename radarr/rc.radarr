@@ -57,7 +57,7 @@ case "$1" in
 
         #Ask nicely first
         if [ -r $PIDFILE ]; then
-		kill -15 $(cat $PIDFILE)
+		kill -2 $(cat $PIDFILE)
 		sleep 5
 	fi
 

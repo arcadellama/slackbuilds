@@ -89,6 +89,7 @@ find -L . \
 mkdir -p $PKG/usr/{bin,lib}/
 mkdir -p $PKG/usr/lib/$PRGNAM
 cp -a $SRCNAM/* $PKG/usr/lib/$PRGNAM
+chmod -R 755 $PKG/usr/lib/$PRGNAM
 
 cat <<EOT > $PKG/usr/bin/$PRGNAM
 #!/bin/sh
@@ -101,7 +102,7 @@ chmod 755 $PKG/usr/bin/$PRGNAM
 
 mkdir -p $PKG/var/lib/$PRGNAM
 chown $RUN_USER:$RUN_GROUP $PKG/var/lib/$PRGNAM
-chmod 770 $PKG/var/lib/$PRGNAM
+chmod 750 $PKG/var/lib/$PRGNAM
 
 sed -i -e '/RUN_USER=${RUN_USER:-/s/'"$PRGNAM"'/'"$RUN_USER"'/' $CWD/rc.$PRGNAM
 sed -i -e '/RUN_GROUP=${RUN_GROUP:-/s/'"$PRGNAM"'/'"$RUN_GROUP"'/' $CWD/rc.$PRGNAM
