@@ -1,16 +1,16 @@
 #!/bin/bash
 
-NAME=nzbdrone
-DESC=sonarr
+NAME=sonarr
+DESC=Sonarr
 MONO=/usr/bin/mono
-BASE=/usr/share/$DESC
-DATADIR=/var/lib/$DESC
+BASE=/usr/share/$NAME
+DATADIR=/var/lib/$NAME
 
 DAEMON=$BASE/NzbDrone.exe
 DAEMONOPTS="-nobrowser -data=$DATADIR"
 
 PIDDIR=$BASE
-PIDFILE=$PIDDIR/$NAME.pid
+PIDFILE=$PIDDIR/nzbdrone.pid
 
 RUN_USER=${RUN_USER:-sonarr}
 RUN_GROUP=${RUN_GROUP:-sonarr}
@@ -69,7 +69,6 @@ case "$1" in
 
         #Ask nicely first
         kill -15 $(cat $PIDFILE)
-
         sleep 5
 
         #Let's ramp it up a bit
@@ -113,4 +112,3 @@ echo "done."
 esac
 
 exit 0
-
