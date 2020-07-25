@@ -6,13 +6,13 @@
 # customary to leave one space after the ':' except on otherwise blank lines.
 
      |-----handy-ruler------------------------------------------------------|
-Bitwarden: Bitwarden (Open source password manager for individuals and 
-Bitwarden: teams.)
-Bitwarden:
-Bitwarden: The easiest and safest way for individuals, teams, and business
-Bitwarden: organizations to store, share, and sync sensitive data. 
-Bitwarden:
-Bitwarden:
-Bitwarden:
-Bitwarden: https://Bitwarden.com
-Bitwarden:
+bitwarden: Bitwarden (Open source password manager for individuals and 
+bitwarden: teams.)
+bitwarden:
+bitwarden: The easiest and safest way for individuals, teams, and business
+bitwarden: organizations to store, share, and sync sensitive data. 
+bitwarden:
+bitwarden:
+bitwarden:
+bitwarden: https://bitwarden.com
+bitwarden:
