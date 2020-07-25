@@ -55,12 +55,10 @@ find -L . \
  \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
   -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
 
-mkdir -p $PKG/usr/bin
+mkdir -p $PKG/usr/{bin,doc}
 ln -s /opt/${PRGNAM^}/$PRGNAM $PKG/usr/bin/$PRGNAM
 
-cd $PKG/usr/share/
-mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION/
-mv $PKG/usr/share/doc/${PRGNAM} $PKG/usr/doc/$PRGNAM-$VERSION
+mv $PKG/usr/share/doc/$PRGNAM $PKG/usr/doc/$PRGNAM-$VERSION
 rm -rf $PKG/usr/share/doc
 
 cp -a $PKG/opt/${PRGNAM^}/LICENSE* $PKG/usr/doc/$PRGNAM-$VERSION/
