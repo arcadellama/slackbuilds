@@ -23,7 +23,6 @@
 # <https://www.gnu.org/licenses/>.
 
 PRGNAM=radarr
-SRCNAM=Radarr
 VERSION=${VERSION:-0.2.0.1504}
 BUILD=${BUILD:-1}
 TAG=${TAG:-_SBo}
@@ -67,16 +66,14 @@ EOF
   exit 1
 fi
 
-
-# Delete the leftover directories if they exist (due to a previous build)
-# and (re)create the packaging directory
 rm -rf $PKG
 mkdir -p $TMP $PKG $OUTPUT
 
 cd $TMP || exit 1
+
 rm -rf $PRGNAM-$VERSION
 mkdir $PRGNAM-$VERSION
-tar xzvf $CWD/$SRCNAM.develop.$VERSION.linux.tar.gz -C $PRGNAM-$VERSION || exit 1
+tar xzvf $CWD/${PRGNAM^}.develop.$VERSION.linux.tar.gz -C $PRGNAM-$VERSION || exit 1
 cd $PRGNAM-$VERSION || exit 1
 
 chown -R root:root .
@@ -86,15 +83,15 @@ find -L . \
       \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
       -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
 
-mkdir -p $PKG/usr/{bin,lib}/
-mkdir -p $PKG/usr/lib/$PRGNAM
-cp -a $SRCNAM/* $PKG/usr/lib/$PRGNAM
-chmod -R 755 $PKG/usr/lib/$PRGNAM
+mkdir -p $PKG/usr/{bin,share,doc}/
+mkdir -p $PKG/usr/share/$PRGNAM
+cp -a ${PRGNAM^}/* $PKG/usr/share/$PRGNAM
+chmod -R 755 $PKG/usr/share/$PRGNAM
 
 cat <<EOT > $PKG/usr/bin/$PRGNAM
 #!/bin/sh
-if [ -x /usr/bin/mono ] && [ -e /usr/lib/$PRGNAM/$SRCNAM.exe ]; then
-  /usr/bin/mono --debug /usr/lib/$PRGNAM/$SRCNAM.exe "\$@"
+if [ -x /usr/bin/mono ] && [ -e /usr/share/$PRGNAM/${PRGNAM^}.exe ]; then
+  /usr/bin/mono --debug /usr/share/$PRGNAM/${PRGNAM^}.exe "\$@"
 fi
 EOT
 
@@ -112,4 +109,4 @@ cat $CWD/slack-desc > $PKG/install/slack-desc
 cat $CWD/doinst.sh > $PKG/install/doinst.sh
 
 cd $PKG
-/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-${VERSION}-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}
