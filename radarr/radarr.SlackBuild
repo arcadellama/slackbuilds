@@ -85,7 +85,7 @@ find -L . \
 
 mkdir -p $PKG/usr/{bin,share,doc}/
 mkdir -p $PKG/usr/share/$PRGNAM
-cp -a ${PRGNAM^}/* $PKG/usr/share/$PRGNAM
+cp -a ${PRGNAM^}/* $PKG/usr/share/$PRGNAM/
 chmod -R 755 $PKG/usr/share/$PRGNAM
 
 cat <<EOT > $PKG/usr/bin/$PRGNAM
