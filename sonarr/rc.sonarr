@@ -1,54 +1,74 @@
 #!/bin/sh
 
 PRGNAM=sonarr
+ALTPRGNAM=NzbDrone
 DESC=Sonarr
+BASE=/usr/share/$PRGNAM
 DATADIR=/var/lib/$PRGNAM
-DAEMON=/usr/bin/$PRGNAM
+
+MONO=${MONO:-/usr/bin/mono}
+DAEMON=$BASE/$ALTPRGNAM.exe
 DAEMON_OPTS="-nobrowser -data=$DATADIR"
 
-PIDFILE=$DATADIR/PRGNAM.pid
+# Funny story about the history of this ol' app...
+# ...it's got some funny traditions.
+PIDFILE=$DATADIR/nzbdrone.pid
 
 RUN_USER=${RUN_USER:-sonarr}
 RUN_GROUP=${RUN_GROUP:-sonarr}
 
-RUNNING=$(ps -ef | grep "NzbDrone.exe" | grep -v grep | wc -l)
-
 set -e
 
+# First some house cleaning...
+# (It's not a dependency check, Pat, I swear...)
+if [ ! -x $MONO ]; then
+    echo "Can't find $MONO... is it installed?"
+    exit 1
+fi
+
+# Hello... Daemon? Are you there?
+if [ ! -r $DAEMON ]; then
+    echo "Can't find $DAEMON, could it be installed somewhere else?"
+    exit 1
+fi
+
+# And finally, clean up the last guy's mess.
+if [ -e $PIDFILE ]; then
+    if ! kill -0 "$(cat $PIDFILE)" > /dev/null 2>&1;then
+        echo "Removing stale $PIDFILE."
+        rm -f $PIDFILE
+    fi
+fi
 
 case "$1" in
     start)
-        if [ $RUNNING -gt 0 ]; then
+        # First let's check if it's already running.
+        if [ -e $PIDFILE ]; then
             echo "$DESC is already running."
             exit 0
-	fi
-
-        echo "Starting $DESC..." 
-
-        if [ -e $PIDFILE ]; then
-            PID="$(cat $PIDFILE)"
-            if ! kill -0 ${PID} > /dev/null 2>&1;then
-                echo "Removing stale $PIDFILE"
-                rm -rf $PIDFILE
-            fi
         fi
 
+        echo "Starting $DESC..."
+        
+        # Check if DATADIR exits,
+        #if not, create it with correct permissions.
         if [ ! -d $DATADIR ]; then
             mkdir -p $DATADIR
             chown -R $RUN_USER:$RUN_GROUP $DATADIR
         fi
 
-        # Mono is very picky about the console
+        # Certain versions of mono are very picky about console definition.
         if [ $TERM != "xterm" ]; then
             export TERM=xterm
         fi
 
-        su -m $RUN_USER -s /bin/sh -c "exec $DAEMON $DAEMON_OPTS &" >/dev/null 2>&1
-
+        # Finally, let's get the party started...
+        su -m $RUN_USER -s /bin/sh -c \
+            "exec $MONO --debug $DAEMON $DAEMON_OPTS &" > /dev/null 2>&1
         ;;
 
     stop)
-        if [ $RUNNING -eq 0 ]; then
+        if [ ! -e $PIDFILE ]; then
             echo "$DESC is not running."
             exit 0
         fi
@@ -56,24 +76,29 @@ case "$1" in
         echo "Shutting down $DESC..."
 
         #Ask nicely first
-        if [ -r $PIDFILE ]; then
-		kill -15 $(cat $PIDFILE)
-		sleep 5
-	fi
+        kill -2 $(cat $PIDFILE)
+        sleep 5
 
         #Let's ramp it up a bit
-        if [ "$(pgrep -f "NzbDrone.exe")" != "" ]; then
-            kill -9 $(pgrep -f "NzbDrone.exe")
-            sleep 2
-        fi
+        if kill -0 "$(cat $PIDFILE)" > /dev/null 2&1; then
+            echo "...still working..."
+            kill -15 "$(cat $PIDFILE)" 
+            sleep 5
 
-        if [ -e $PIDFILE ]; then
-            PID="$(cat $PIDFILE)"
-            if ! kill -0 $PID > /dev/null 2>&1;then
-                rm -rf $PIDFILE
+            # Let's nuke the bastard...
+            if kill -0 "$(cat $PIDFILE)" > /dev/null 2&1; then
+                echo "...one last try..."
+                kill -9 "$(cat $PIDFILE)"
+                sleep 5
+
+                # No? Well then, a toast: 'To the end of the world...'
+                if [ $(pgrep -f $DAEMON) -eq $(cat $PIDFILE) ]; then
+                    echo "Unable to terminate $DESC."
+                    exit 1
+                fi
             fi
         fi
-	echo "done."
+	echo "done!"
         ;;
     
     restart)
@@ -83,11 +108,11 @@ case "$1" in
         ;;
 
     status)
-        if [ $RUNNING -eq 0 ]; then
-            echo "$DESC is not running."
-
-        else
+        if [ -e $PIDFILE ]; then
             echo "$DESC is running."
+            exit 0
+        else
+            echo "$DESC is not running."
 	    exit 0
         fi
         ;;
