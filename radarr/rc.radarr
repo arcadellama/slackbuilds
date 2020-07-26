@@ -1,13 +1,11 @@
 #!/bin/sh
-#
-# An "init script" for all the Slackware C# kiddies.
-# Stay sharp out there, friends.
-#
+
 PRGNAM=radarr
 DESC=Radarr
 BASE=/usr/share/$PRGNAM
 DATADIR=/var/lib/$PRGNAM
-MONO=${MONO:-$(which mono)}
+
+MONO=${MONO:-/usr/bin/mono}
 DAEMON=$BASE/${PRGNAM^}.exe
 DAEMON_OPTS="-nobrowser -data=$DATADIR"
 
@@ -23,8 +21,7 @@ set -e
 # First some house cleaning...
 # (It's not a dependency check, Pat, I swear...)
 if [ ! -x $MONO ]; then
-    echo "Can't find mono. Either export it to PATH..."
-    echo "...or, install it first?"
+    echo "Can't find $MONO... is it installed?"
     exit 1
 fi
 
@@ -46,15 +43,14 @@ case "$1" in
     start)
         # First let's check if it's already running.
         if [ -e $PIDFILE ]; then
-            if kill -0 "$(cat $PIDFILE)" > /dev/null 2>&1; then
-                echo "$DESC is already running."
-                exit 0
-            fi
+            echo "$DESC is already running."
+            exit 0
         fi
 
         echo "Starting $DESC..."
         
-        # Check if DATADIR exits, if not, create it with correct permissions.
+        # Check if DATADIR exits,
+        #if not, create it with correct permissions.
         if [ ! -d $DATADIR ]; then
             mkdir -p $DATADIR
             chown -R $RUN_USER:$RUN_GROUP $DATADIR
@@ -68,16 +64,6 @@ case "$1" in
         # Finally, let's get the party started...
         su -m $RUN_USER -s /bin/sh -c \
             "exec $MONO --debug $DAEMON $DAEMON_OPTS &" > /dev/null 2>&1
-
-        sleep 5
-
-        # Let's see if it worked
-        if ! kill -0 "$(cat $PIDFILE)" > /dev/null 2>&1; then
-            echo "Uh oh, that didn't work. Check the logs?"
-            exit 1
-        else
-            echo "...done."
-        fi
         ;;
 
     stop)
@@ -122,10 +108,8 @@ case "$1" in
 
     status)
         if [ -e $PIDFILE ]; then
-            if kill -0 "$(cat $PIDFILE)" > /dev/null 2&1; then
-                echo "$DESC is running."
-                exit 0
-            fi
+            echo "$DESC is running."
+            exit 0
         else
             echo "$DESC is not running."
 	    exit 0
