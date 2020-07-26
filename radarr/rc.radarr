@@ -5,9 +5,10 @@
 #
 PRGNAM=radarr
 DESC=Radarr
+BASE=/usr/share/$PRGNAM
 DATADIR=/var/lib/$PRGNAM
 MONO=${MONO:-$(which mono)}
-DAEMON=$DATADIR/${PRGNAM^}.exe
+DAEMON=$BASE/${PRGNAM^}.exe
 DAEMON_OPTS="-nobrowser -data=$DATADIR"
 
 # Funny story about the history of this ol' app...
@@ -74,9 +75,9 @@ case "$1" in
         if ! kill -0 "$(cat $PIDFILE)" > /dev/null 2>&1; then
             echo "Uh oh, that didn't work. Check the logs?"
             exit 1
-        fi
         else
             echo "...done."
+        fi
         ;;
 
     stop)
