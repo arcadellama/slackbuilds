@@ -1,0 +1,37 @@
+NZBGet is a binary downloader, which downloads files from Usenet based on
+information given in nzb-files.
+
+NZBGet is written in C++ and is known for its extraordinary performance and
+efficiency.
+
+NZBGet can be run on almost every device - classic PCs, NAS, media players,
+SAT-receivers, WLAN-routers, etc. 
+
+It is not recommended to run NZBGet as root. The default user/group is
+'nzbget'.
+You can either create this user like this:
+
+    # groupadd nzbget
+    # useradd -d /var/lib/nzbget -s /bin/false -g nzbget nzbget 
+
+Or you can pass a different user/group if you prefer:
+
+    # RUN_USER=foo RUN_GROUP=bar ./$PRGNAM.SlackBuild
+
+You can have NZBGet start/stop automatically at boot/shutdown. In
+/etc/rc.d/rc.local add:
+
+    # Start NZBGet at boot
+    if [ -x /etc/rc.d/rc.nzbget ]; then
+      /etc/rc.d/rc.nzbget start
+    if
+
+And in /etc/rc.d/rc.local_shutdown add:
+
+    # Stop NZBGet at shutdown
+    if [ -x /etc/rc.d/rc.nzbget ]; then
+      /etc/rc.d/rc.nzbget stop
+    if
+
+After installing visit http://localhost:6789 to configure NZBGet.
+Default login is 'nzbget' and password is 'Tegbzn6789'.

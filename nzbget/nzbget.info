@@ -1,0 +1,10 @@
+PRGNAM="nzbget"
+VERSION="21.0"
+HOMEPAGE="https://nzbget.net"
+DOWNLOAD="https://github.com/nzbget/nzbget/releases/download/v21.0/nzbget-21.0-src.tar.gz"
+MD5SUM="89bd4fd5198e1790ed58e41dbfec2fea"
+DOWNLOAD_x86_64=""
+MD5SUM_x86_64=
+REQUIRES="%README%"
+MAINTAINER="Justin Teague"
+EMAIL="arcadellama at posteo dot net"
