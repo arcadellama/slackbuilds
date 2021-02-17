@@ -1,8 +1,0 @@
-PRGNAM="radarr"
-VERSION="0.2.0.1504"
-HOMEPAGE="https://radarr.video"
-DOWNLOAD="https://github.com/Radarr/Radarr/releases/download/v0.2.0.1504/Radarr.develop.0.2.0.1504.linux.tar.gz"
-MD5SUM="7c566942030f412012b83531642ea21d"
-REQUIRES="mono mediainfo sqlite3"
-MAINTAINER="Justin Teague"
-EMAIL="arcadellama at posteo dot net"
