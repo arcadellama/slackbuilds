@@ -69,11 +69,10 @@ find -L . \
  \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
   -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
 
-cd build
-  make install \
-    PREFIX=/usr \
-    MANPREFIX=$PREFIX/man \
-    DESTDIR=$PKG
+mkdir -p $PKG/usr/bin $PKG/usr/share/$PKGNAM-$VERSION $PKG/usr/man/man1
+cp -a bin/* $PKG/usr/bin/
+cp -a shared/* $PKG/usr/share/$PRGNAM-$VERSION/
+cp -a mw.1 $PKG/usr/man/man1/
 
 find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
   | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
