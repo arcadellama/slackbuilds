@@ -1,0 +1,19 @@
+A full-featured and autoconfigured email client on the terminal with
+neomutt Mail stored offline enabling the ability to: view and write
+emails while you're away from the internet make backups Provides a
+mailsync script that can be scheduled to run as often as you like,
+which downloads/syncs mail and notifies you when new mail has
+arrived.  Specifically, this wizard:
+
+Determines your email server's IMAP and SMTP servers and ports
+Creates dotfiles for neomutt, isync, and msmtp appropriate for your
+email address Encrypts and locally stores your password for easy
+remote access, accessible only by your GPG key Handles as many as
+nine separate email accounts automatically Auto-creates bindings to
+switch between accounts or between mailboxes Provides sensible
+defaults and an attractive appearance for the neomutt email client
+If mutt-wizard doesn't know your server's IMAP/SMTP info by default,
+it will prompt you for them and will put them in all the right
+places.
+
+OPTIONAL DEPENDENCIES: lynx notmuch abook urlview cronie mpop
