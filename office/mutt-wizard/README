@@ -16,4 +16,4 @@ If mutt-wizard doesn't know your server's IMAP/SMTP info by default,
 it will prompt you for them and will put them in all the right
 places.
 
-OPTIONAL DEPENDENCIES: lynx notmuch abook urlview cronie mpop
+OPTIONAL DEPENDENCIES: notmuch abook urlview cronie mpop
