@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Plexamp
+Exec=env APPIMAGELAUNCHER_DISABLE=1 DESKTOPINTEGRATION=0 /usr/bin/plexamp --no-sandbox
+Terminal=false
+Type=Application
+Icon=plexamp
+StartupWMClass=plexamp
+X-AppImage-Version=3.4.2
+Comment=The best little audio player on the planet
+Categories=AudioVideo;
