@@ -71,7 +71,7 @@ find -L . \
 
 mkdir -p $PKG/usr/bin $PKG/usr/share/$PRGNAM $PKG/usr/man/man1
 cp -a bin/* $PKG/usr/bin/
-cp -a share/* $PKG/usr/share/$PRGNAM-$VERSION/
+cp -a share/* $PKG/usr/share/$PRGNAM/
 cp -a mw.1 $PKG/usr/man/man1/
 
 find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
