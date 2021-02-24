@@ -76,18 +76,19 @@ install -Dm755 $PWD/bin/openfile $PKG/usr/bin/openfile
 find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
   | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
 
-install -Dm644 mw.1 $PKG/usr/man/man1/$PRGNAM.1.gz
+install -Dm644 mw.1 $PKG/usr/man/man1/$PRGNAM.1
 
 find $PKG/usr/man -type f -exec gzip -9 {} \;
 for i in $( find $PKG/usr/man -type l ) ; do ln -s $( readlink $i ).gz $i.gz ; rm $i ; done
 
-install -Dm644 $PWD/share/domains.csv $PKG/usr/share/$PRGNAM/domains.csv.new
-install -Dm644 $PWD/share/mailcap $PKG/usr/share/$PRGNAM/mailcap.new
-install -Dm644 $PWD/share/$PRGNAM.muttrc $PKG/usr/share/$PRGNAM/$PRGNAM.muttrc.new
+mkdir -p $PKG/usr/share/$PRGNAM
+cat  $PWD/share/domains.csv > $PKG/usr/share/$PRGNAM/domains.csv.new
+cat $PWD/share/mailcap > $PKG/usr/share/$PRGNAM/mailcap.new
+cat $PWD/share/$PRGNAM.muttrc > $PKG/usr/share/$PRGNAM/$PRGNAM.muttrc.new
 
 mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
-cat $PWD/LICENSE $PKG/usr/doc/$PRGNAM-$VERSION/LICENSE
-cat $PWD/README.md $PGK/usr/doc/$PRGNAM-$VERSION/README.md
+cat $PWD/LICENSE > $PKG/usr/doc/$PRGNAM-$VERSION/LICENSE
+cat $PWD/README.md > $PGK/usr/doc/$PRGNAM-$VERSION/README.md
 cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
 
 mkdir -p $PKG/install
