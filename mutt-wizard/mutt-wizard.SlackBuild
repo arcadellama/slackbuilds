@@ -69,23 +69,23 @@ find -L . \
  \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
   -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
 
-mkdir -p $PKG/usr/bin 
-cp -a bin/* $PKG/usr/bin/
+install -Dm755 $PWD/bin/mailsync  $PKG/usr/bin/mailsync
+install -Dm755 $PWD/bin/mw $PKG/usr/bin/mailsync
+install -Dm755 $PWD/bin/openfile $PKG/usr/bin/openfile
 
 find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
   | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
 
-$PKG/usr/man/man1
-cp -a mw.1 $PKG/usr/man/man1/
+install -Dm644 mw.1 $PKG/usr/man/man1/$PRGNAM.1.gz
 
 find $PKG/usr/man -type f -exec gzip -9 {} \;
 for i in $( find $PKG/usr/man -type l ) ; do ln -s $( readlink $i ).gz $i.gz ; rm $i ; done
 
 $PKG/usr/share/$PRGNAM 
-cp -a share/* $PKG/usr/share/$PRGNAM/
+cat $PWD/share/{domains.csv,mailcap,mutt-wizard.muttrc} $PKG/usr/share/$PRGNAM/{domains.csv,mailcap,mutt-wizard.muttrc}.new
 
 mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
-cp -a {LICENSE,README.md} $PKG/usr/doc/$PRGNAM-$VERSION
+cat $PWD/{LICENSE,README.md} $PKG/usr/doc/$PRGNAM-$VERSION
 cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
 
 mkdir -p $PKG/install
