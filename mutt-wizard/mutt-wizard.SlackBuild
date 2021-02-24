@@ -70,7 +70,7 @@ find -L . \
   -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
 
 install -Dm755 $PWD/bin/mailsync  $PKG/usr/bin/mailsync
-install -Dm755 $PWD/bin/mw $PKG/usr/bin/mailsync
+install -Dm755 $PWD/bin/mw $PKG/usr/bin/mw
 install -Dm755 $PWD/bin/openfile $PKG/usr/bin/openfile
 
 find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
@@ -81,7 +81,7 @@ install -Dm644 mw.1 $PKG/usr/man/man1/$PRGNAM.1.gz
 find $PKG/usr/man -type f -exec gzip -9 {} \;
 for i in $( find $PKG/usr/man -type l ) ; do ln -s $( readlink $i ).gz $i.gz ; rm $i ; done
 
-$PKG/usr/share/$PRGNAM 
+mkdir -p $PKG/usr/share/$PRGNAM 
 cat $PWD/share/{domains.csv,mailcap,mutt-wizard.muttrc} $PKG/usr/share/$PRGNAM/{domains.csv,mailcap,mutt-wizard.muttrc}.new
 
 mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
@@ -90,7 +90,7 @@ cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
 
 mkdir -p $PKG/install
 cat $CWD/slack-desc > $PKG/install/slack-desc
-#cat $CWD/doinst.sh > $PKG/install/doinst.sh
+cat $CWD/doinst.sh > $PKG/install/doinst.sh
 
 cd $PKG
 /sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}
