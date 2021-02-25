@@ -11,4 +11,4 @@ config() {
   # Otherwise, we leave the .new copy for the admin to consider...
 }
 
-config /usr/share/mutt-wizard/mutt-wizard.muttrc.new
+config usr/share/mutt-wizard/mutt-wizard.muttrc.new
