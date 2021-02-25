@@ -86,7 +86,7 @@ mv $PKG/usr/share/$PRGNAM/$PRGNAM.muttrc $PGK/usr/share/$PGRNAM/$PRGNAM.muttrc.n
 
 mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
 cat $PWD/LICENSE > $PKG/usr/doc/$PRGNAM-$VERSION/LICENSE
-cat $PWD/README.md > $PGK/usr/doc/$PRGNAM-$VERSION/README.md
+cat $PWD/README.md > $PKG/usr/doc/$PRGNAM-$VERSION/README.md
 cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
 
 mkdir -p $PKG/install
