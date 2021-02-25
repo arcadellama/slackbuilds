@@ -69,22 +69,20 @@ find -L . \
  \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
   -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
 
-install -Dm755 $PWD/bin/mailsync  $PKG/usr/bin/mailsync
-install -Dm755 $PWD/bin/mw $PKG/usr/bin/mw
-install -Dm755 $PWD/bin/openfile $PKG/usr/bin/openfile
+make \
+    PREFIX=/usr \
+    MANPREFIX=/usr/man \
+    DESTDIR="$PKG" \
+    - s install
 
 find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
   | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
 
-install -Dm644 mw.1 $PKG/usr/man/man1/$PRGNAM.1
-
 find $PKG/usr/man -type f -exec gzip -9 {} \;
 for i in $( find $PKG/usr/man -type l ) ; do ln -s $( readlink $i ).gz $i.gz ; rm $i ; done
 
-mkdir -p $PKG/usr/share/$PRGNAM
-cat  $PWD/share/domains.csv > $PKG/usr/share/$PRGNAM/domains.csv.new
-cat $PWD/share/mailcap > $PKG/usr/share/$PRGNAM/mailcap.new
-cat $PWD/share/$PRGNAM.muttrc > $PKG/usr/share/$PRGNAM/$PRGNAM.muttrc.new
+# Create config for admin review
+mv $PKG/share/$PRGNAM/$PRGNAM.muttrc $PGK/share/$PGRNAM/$PRGNAM.muttrc.new
 
 mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
 cat $PWD/LICENSE > $PKG/usr/doc/$PRGNAM-$VERSION/LICENSE
