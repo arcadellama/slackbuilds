@@ -6,7 +6,7 @@
 # customary to leave one space after the ':' except on otherwise blank lines.
 
            |-----handy-ruler------------------------------------------------------|
-mutt-wizard: mutt-wizard (short description of app)
+mutt-wizard: mutt-wizard (autoconfigure neomutt)
 mutt-wizard:
 mutt-wizard: A full-featured and autoconfigured email client on the terminal
 mutt-wizard: with neomutt.
