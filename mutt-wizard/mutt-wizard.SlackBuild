@@ -82,7 +82,7 @@ find $PKG/usr/man -type f -exec gzip -9 {} \;
 for i in $( find $PKG/usr/man -type l ) ; do ln -s $( readlink $i ).gz $i.gz ; rm $i ; done
 
 # Create config for admin review
-mv $PKG/share/$PRGNAM/$PRGNAM.muttrc $PGK/share/$PGRNAM/$PRGNAM.muttrc.new
+mv $PKG/usr/share/$PRGNAM/$PRGNAM.muttrc $PGK/usr/share/$PGRNAM/$PRGNAM.muttrc.new
 
 mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
 cat $PWD/LICENSE > $PKG/usr/doc/$PRGNAM-$VERSION/LICENSE
