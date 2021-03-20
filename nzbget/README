@@ -13,3 +13,6 @@ Some common rules for the README file:
   * conflicts with any stock Slackware packages
 
 If longer instructions are necessary, place them in a README.SBo file.
+
+# groupadd nzbget 
+# useradd -s /bin/false -g nzbget nzbget
