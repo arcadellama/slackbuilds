@@ -2,14 +2,16 @@
 # Start/stop the NZBget daemon.
 #
 USER=nzbget
+PRGNAM=nzbget
 PREFIX=/usr/bin
+BIN=$PREFIX/$PRGNAM
 
 case "$1" in
 start)   echo -n "Start services: NZBget"
-$PREFIX/nzbget -o DaemonUsername=$USER -D
+$BIN -o DaemonUsername=$USER --daemon
 ;;
 stop)   echo -n "Stop services: NZBget"
-$PREFIX/nzbget -Q
+$BIN --quit
 ;;
 *)   echo "Usage: $0 start|stop"
 exit 1
