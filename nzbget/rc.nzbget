@@ -1,0 +1,21 @@
+#!/bin/sh
+# Start/stop the NZBget daemon.
+#
+. /etc/rc.d/init.d/functions
+
+USER=nzbget
+GROUP=nzbget
+PREFIX=/usr/bin
+
+case "$1" in
+start)   echo -n "Start services: NZBget"
+daemon --user=$USER --group=$GROUP $PREFIX/nzbget -D
+;;
+stop)   echo -n "Stop services: NZBget"
+daemon --user=$USER --group=$GROUP $PREFIX/nzbget -Q
+;;
+*)   echo "Usage: $0 start|stop"
+exit 1
+;;
+esac
+exit 0
