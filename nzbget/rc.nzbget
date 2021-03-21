@@ -1,41 +1,32 @@
 #!/bin/sh
 # Start/stop the NZBget daemon.
 #
-USER=nzbget
+
 PRGNAM=nzbget
+USER=nzbget
 MAINDIR=/var/lib/$PRGNAM
 BIN=/usr/bin/$PRGNAM
 
 set -e
 
 case "$1" in
-start)   echo -n "Start services: NZBget"
+start)   echo -e "Start services: NZBget\n"
     if ! id "$USER" >/dev/null 2>&1; then
 	echo -n "User $USER does not exist."
 	exit 1
     fi
 
     if ! -x $BIN; then
-	echo "Cannot find $BIN.\n"
+	echo -e "Cannot find $BIN.\n"
 	exit 1
     fi
 
-    if ! -e $MAINDIR; then
-	mkdir -p $MAINDIR
-    fi
+    $BIN -o DaemonUsername=$USER -o MainDir=$MAINDIR -c $MAINDIR/$PRGNAM/$PRGNAM.conf --daemon ;;
 
-    if ! -e $MAINDIR/$PRGNAM.conf; then
-	cat /usr/share/$PRGNAM/$PRGNAM > $MAINDIR/$PRGNAM.conf
-    fi
-
-    chown -R $USER:$USER $MAINDIR
-
-    $BIN -o DaemonUsername=$USER MainDir=$MAINDIR -c $MAINDIR/$PRGNAM/$PRGNAM.conf --daemon ;;
-
-stop)   echo -n "Stop services: NZBget"
+stop)   echo -e "Stop services: NZBget\n"
     $BIN --quit
 ;;
-*)   echo "Usage: $0 start|stop"
+*)   echo -e  "Usage: $0 start|stop\n"
 exit 1
 ;;
 esac
