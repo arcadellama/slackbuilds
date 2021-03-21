@@ -1,32 +1,59 @@
 #!/bin/sh
-# Start/stop the NZBget daemon.
-#
+# Start/Stop/Reload the NZBget daemon.
 
 PRGNAM=nzbget
 USER=nzbget
-MAINDIR=/var/lib/$PRGNAM
 BIN=/usr/bin/$PRGNAM
+
+MAINDIR=~/
+CONFIG=$MAINDIR/$PGRNAM.conf
+UMASK=1000
+
+CONTROLIP=0.0.0.0
+CONTROLPORT=6789
+SECUREPORT=6791
+
+UPDATECHECK=no
 
 set -e
 
 case "$1" in
-start)   echo -e "Start services: NZBget\n"
-    if ! id "$USER" >/dev/null 2>&1; then
-	echo -n "User $USER does not exist."
+start)   echo "Start services: $PRGNAM"
+    if [ ! id "$USER" >/dev/null 2>&1 ]; then
+	echo "User $USER does not exist."
 	exit 1
     fi
 
-    if ! -x $BIN; then
-	echo -e "Cannot find $BIN.\n"
+    if [ ! -x $BIN ]; then
+	echo "Cannot find $BIN."
 	exit 1
     fi
 
-    $BIN -o DaemonUsername=$USER -o MainDir=$MAINDIR -c $MAINDIR/$PRGNAM/$PRGNAM.conf --daemon ;;
-
-stop)   echo -e "Stop services: NZBget\n"
-    $BIN --quit
+    $BIN \
+      -o MainDir=$MAINDIR \
+      -o ControlIP=$CONTROLIP \
+      -o ControlPort=$CONTROLPORT \
+      -o SecurePort=$SECUREPORT \
+      -o UpdateCheck=$UPDATECHECK \
+      -o DaemonUsername=$USER \
+      -o UMask=$UMASK \
+      -c $CONIFG \
+      --daemon
 ;;
-*)   echo -e  "Usage: $0 start|stop\n"
+
+stop)   echo "Stop services: $PRGNAM"
+    $BIN \
+      -c $CONFIG \
+      --quit
+;;
+
+reload) echo "Reload services: $PRGNAM"
+      $BIN \
+        -c $CONFIG \
+        --reload
+;;
+
+*)   echo "Usage: $0 start|stop|reload"
 exit 1
 ;;
 esac
