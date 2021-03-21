@@ -24,4 +24,5 @@ NZBGet as a daemon would be to do the following as root:
     # chmod +x /etc/rc.d/nzbget/rc.nzbget
     
     # mkdir -p /var/lib/nzbget
-    # cp -a /usr/share/nzbget/nzbget.conf /var/lib/nzbget/.nzbget
+    # cp -a /usr/share/nzbget/nzbget.conf /var/lib/nzbget/nzbget.conf
+    # chown -R nzbget:nzbget /var/lib/nzbget
