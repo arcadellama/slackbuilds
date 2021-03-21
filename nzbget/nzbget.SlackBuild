@@ -24,7 +24,7 @@
 
 PRGNAM=nzbget
 VERSION=${VERSION:-21.0}
-BUILD=${BUILD:-3}
+BUILD=${BUILD:-1}
 TAG=${TAG:-_SBo}
 
 if [ -z "$ARCH" ]; then
