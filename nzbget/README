@@ -2,10 +2,9 @@ NZBGet is a binary downloader, which downloads files from Usenet
 based on information given in nzb-files. NZBGet is written in C++
 and is known for its extraordinary performance and efficiency.
 
-NZBGet either needs a configuration file or options passed on the
-command-line. There is a default configuration template located at
-/usr/share/nzbget/nzbget.conf. Copy and edit this file. By default,
-NZBGet looks for this file in:
+There is a default configuration template located at
+/usr/share/nzbget/nzbget.conf. By default, NZBGet looks for this in:
+
   * <app-directory>/nzbget.conf
   * ~/.nzbget
   * /etc/nzbget.conf
@@ -13,7 +12,7 @@ NZBGet looks for this file in:
   * /usr/local/etc/nzbget.conf
   * /opt/etc/nzbget.conf
 
-NZBGet can be run as a daemon. There is a sample init located at
+NZBGet can be also run as a daemon. There is a sample init located at
 /usr/share/nzbget/rc.nzbget you can edit and use. One option to use
 NZBGet as a daemon would be to do the following as root:
 
