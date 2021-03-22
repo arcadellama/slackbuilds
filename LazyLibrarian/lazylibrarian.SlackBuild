@@ -2,7 +2,7 @@
 
 # Slackware build script for LazyLibrarian
 
-# Copyright 2017 Justin Teague <arcadellama@posteo.net>
+# Copyright 2021 Justin Teague <arcadellama@posteo.net>
 # All rights reserved.
 #
 # Redistribution and use of this script, with or without modification, is
@@ -22,7 +22,7 @@
 #  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 #  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-PRGNAM=LazyLibrarian
+PRGNAM=lazylibrarian
 VERSION=${VERSION:-1.7.2}
 BUILD=${BUILD:-1}
 TAG=${TAG:-_SBo}
@@ -39,6 +39,7 @@ CWD=$(pwd)
 TMP=${TMP:-/tmp/SBo}
 PKG=$TMP/package-$PRGNAM
 OUTPUT=${OUTPUT:-/tmp}
+SRCNAM=LazyLibrarian
 
 if [ "$ARCH" = "i586" ]; then
   SLKCFLAGS="-O2 -march=i586 -mtune=i686"
@@ -72,7 +73,6 @@ find -L . \
 find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
   | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
 
-
 mkdir -p $PKG/opt/$PRGNAM
 cp -a * $PKG/opt/$PRGNAM
 
@@ -81,9 +81,6 @@ cp -a init/lazylibrarian.sh $PKG/usr/bin/$PRGNAM
 
 mkdir -p $PKG/usr/share/applications
 cp -a init/$PRGNAM.desktop $PKG/usr/share/applications/$PRGNAM.desktop
-
-mkdir -p $PKG/etc/default
-cp -a init/$PRGNAM.default $PKG/etc/default/$PRGNAM.new
 
 mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
 cp -a {README.md,LICENSE} $PKG/usr/doc/$PRGNAM-$VERSION
