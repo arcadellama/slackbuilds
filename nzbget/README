@@ -12,16 +12,3 @@ There is a default configuration template located at
   * /usr/local/etc/nzbget.conf
   * /opt/etc/nzbget.conf
 
-NZBGet can be also run as a daemon. There is a sample init located at
-/usr/share/nzbget/rc.nzbget you can edit and use. One option to use
-NZBGet as a daemon would be to do the following as root:
-
-    # groupadd nzbget
-    # useradd -d /var/lib/nzbget -s /bin/false -g nzbget nzbget
-    
-    # cp -a /usr/share/nzbget/rc.nzbget /etc/rc.d/nzbget/rc.nzbget
-    # chmod +x /etc/rc.d/nzbget/rc.nzbget
-    
-    # mkdir -p /var/lib/nzbget
-    # cp -a /usr/share/nzbget/nzbget.conf /var/lib/nzbget/nzbget.conf
-    # chown -R nzbget:nzbget /var/lib/nzbget

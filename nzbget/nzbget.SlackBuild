@@ -54,8 +54,6 @@ else
   LIBDIRSUFFIX=""
 fi
 
-#DOCS="dontforget"
-
 set -e
 
 rm -rf $PKG
@@ -75,7 +73,6 @@ CFLAGS="$SLKCFLAGS" \
 CXXFLAGS="$SLKCFLAGS" \
 ./configure \
   --prefix=/usr \
-  --libdir=/usr/lib${LIBDIRSUFFIX} \
   --sysconfdir=/etc \
   --localstatedir=/var \
   --mandir=/usr/man \
@@ -88,17 +85,14 @@ make install DESTDIR=$PKG
 find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
   | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
 
-mkdir -p $PKG/usr/share/$PRGNAM
-mv $PKG/usr/share/$PRGNAM/$PRGNAM.conf $PKG/usr/share/$PRGNAM/$PRGNAM.conf.new
-cat $CWD/rc.$PRGNAM > $PKG/usr/share/$PRGNAM/rc.$PRGNAM.new
-
 mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+cp -a \
+    COPYING ChangeLog README nzbget.conf \
+    $PKG/usr/doc/$PRGNAM-$VERSION
 cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
-cat $CWD/README > $PKG/usr/doc/$PRGNAM-$VERSION/README.SlackBuild
 
 mkdir -p $PKG/install
 cat $CWD/slack-desc > $PKG/install/slack-desc
-cat $CWD/doinst.sh > $PKG/install/doinst.sh
 
 cd $PKG
 /sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}
