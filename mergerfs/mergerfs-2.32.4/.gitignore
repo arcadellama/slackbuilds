@@ -1,0 +1,25 @@
+# Compiled Object files
+*.slo
+*.lo
+*.o
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+
+# build artifacts
+mergerfs
+obj/
+src/version.hpp
+
+# Debian files
+debian/files
+debian/changelog
+
+# RPM files
+rpmbuild/
