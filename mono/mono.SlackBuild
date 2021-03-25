@@ -20,9 +20,9 @@ if [ -z "$ARCH" ]; then
 fi
 
 CWD=$(pwd)
-TMP=${TMP:-/tmp/SBo}
+TMP=${TMP:-/home/tmp/SBo}
 PKG=$TMP/package-$PRGNAM
-OUTPUT=${OUTPUT:-/tmp}
+OUTPUT=${OUTPUT:-/home/tmp}
 
 if [ "$ARCH" = "i586" ]; then
    SLKCFLAGS="-O2 -march=i586 -mtune=i686"
