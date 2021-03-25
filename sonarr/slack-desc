@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.
+# Line up the first '|' above the ':' following the base package name, and
+# the '|' on the right side marks the last column you can put a character in.
+# You must make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':' except on otherwise blank lines.
+
+      |-----handy-ruler------------------------------------------------------|
+sonarr: sonarr (TV download automation for usenet and torrents.)
+sonarr:
+sonarr: Sonarr is a PVR for Usenet and BitTorrent users. It can monitor
+sonarr: multiple RSS feeds for new episodes of your favorite shows and will
+sonarr: grab, sort and rename them. It can also be configured to automatically
+sonarr: upgrade the quality of files already downloaded when a better quality 
+sonarr: format becomes available.
+sonarr:
+sonarr:
+sonarr: Homepage <https://sonarr.tv>
+sonarr:
