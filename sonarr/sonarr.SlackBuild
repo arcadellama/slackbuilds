@@ -80,7 +80,7 @@ rm -rf $PKG/usr/lib/$PRGNAM/bin/Sonarr.Update
 echo "PackageVersion=$VERSION-$BUILD" > $PKG/usr/lib/$PRGNAM/package_info
 
 mkdir -p $PKG/usr/bin
-echo "/usr/bin/mono --debug /usr/lib/sonarr/Sonarr.exe" > $PKG/usr/bin/$PRGNAM
+echo "/usr/bin/mono --debug /usr/lib/sonarr/bin/Sonarr.exe" > $PKG/usr/bin/$PRGNAM
 chmod +x $PKG/usr/bin/$PRGNAM
 
 mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
