@@ -1,0 +1,4 @@
+PackageAuthor=[sonarr](https://slackbuilds.org/repository/14.2/network/nzbget/)
+UpdateMethod=External
+UpdateMethodMessage=Download the latest [SlackBuild](https://slackbuilds.org) for [sonarr](https://slackbuilds.org/repository/14.2/network/nzbget/)
+Branch=main
