@@ -76,7 +76,7 @@ mkdir -p $PKG/usr/lib/$PRGNAM/bin
 cp -a * $PKG/usr/lib/sonarr/bin
 
 # Disable build-in updater
-rm -rf $PKG/usr/lib/$PRGNAM/bin/Sonarr.Update
+# rm -rf $PKG/usr/lib/$PRGNAM/bin/Sonarr.Update
 cp -a $CWD/package_info $PKG/usr/lib/$PRGNAM/package_info
 echo "PackageVersion=$VERSION-$BUILD" >> $PKG/usr/lib/$PRGNAM/package_info
 
