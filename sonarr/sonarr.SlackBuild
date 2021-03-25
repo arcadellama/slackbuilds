@@ -69,20 +69,19 @@ find -L . \
  \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
   -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
 
-find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
-  | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
-
+rm -rf $PWD/Sonarr.Update
 mkdir -p $PKG/usr/lib/$PRGNAM/bin
-cp -a * $PKG/usr/lib/sonarr/bin
+cp -a $PWD/* $PKG/usr/lib/sonarr/bin
 
-# Disable build-in updater
-# rm -rf $PKG/usr/lib/$PRGNAM/bin/Sonarr.Update
 cp -a $CWD/package_info $PKG/usr/lib/$PRGNAM/package_info
-echo "PackageVersion=$VERSION-$BUILD" >> $PKG/usr/lib/$PRGNAM/package_info
+echo "PackageVersion=$VERSION-$ARCH-$BUILD$TAG" >> $PKG/usr/lib/$PRGNAM/package_info
 
 mkdir -p $PKG/usr/bin
 echo "/usr/bin/mono --debug /usr/lib/sonarr/bin/Sonarr.exe" > $PKG/usr/bin/$PRGNAM
 chmod +x $PKG/usr/bin/$PRGNAM
+
+find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
+  | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
 
 mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
 cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
