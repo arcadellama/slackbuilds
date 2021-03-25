@@ -9,7 +9,7 @@ VERSION=${VERSION:-6.0.12.0.122}
 MAJORVERSION=${MAJORVERSION:-6.0.12.0.122}
 BIN_VERSION=${BIN_VERSION:-4.4.2.11}
 BUILD=${BUILD:-1}
-TAG=${TAG:-_SBo}
+TAG=${TAG:-_llama}
 
 if [ -z "$ARCH" ]; then
   case "$( uname -m )" in
