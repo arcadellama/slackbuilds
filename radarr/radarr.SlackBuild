@@ -77,7 +77,7 @@ cp -a $CWD/package_info $PKG/usr/lib/$PRGNAM/package_info
 echo "PackageVersion=$VERSION-$ARCH-$BUILD$TAG" >> $PKG/usr/lib/$PRGNAM/package_info
 
 mkdir -p $PKG/usr/bin
-echo "/usr/bin/mono --debug /usr/lib/radarr/bin/Radarr" > $PKG/usr/bin/$PRGNAM
+echo "/usr/lib/radarr/bin/Radarr" > $PKG/usr/bin/$PRGNAM
 chmod +x $PKG/usr/bin/$PRGNAM
 
 find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
