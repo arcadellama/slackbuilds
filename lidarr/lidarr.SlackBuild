@@ -78,8 +78,8 @@ echo "PackageVersion=$VERSION-$ARCH-$BUILD$TAG" >> $PKG/usr/lib/$PRGNAM/package_
 
 mkdir -p $PKG/usr/bin
 cat << EOF > $PKG/usr/bin/$PRGNAM
-#!/bin/sh
-/usr/bin/mono --debug /usr/lib/lidarr/bin/Lidarr.exe
+  #!/bin/sh
+  /usr/bin/mono --debug /usr/lib/lidarr/bin/Lidarr.exe
 EOF
 chmod +x $PKG/usr/bin/$PRGNAM
 
