@@ -77,7 +77,10 @@ cp -a $CWD/package_info $PKG/usr/lib/$PRGNAM/package_info
 echo "PackageVersion=$VERSION-$ARCH-$BUILD$TAG" >> $PKG/usr/lib/$PRGNAM/package_info
 
 mkdir -p $PKG/usr/bin
-echo "/usr/bin/mono --debug /usr/lib/lidarr/bin/Lidarr.exe" > $PKG/usr/bin/$PRGNAM
+cat << EOF > $PKG/usr/bin/$PRGNAM
+#!/bin/sh
+/usr/bin/mono --debug /usr/lib/lidarr/bin/Lidarr.exe
+EOF
 chmod +x $PKG/usr/bin/$PRGNAM
 
 find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
