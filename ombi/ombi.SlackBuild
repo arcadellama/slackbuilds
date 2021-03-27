@@ -80,7 +80,7 @@ cat << EOF > $PKG/usr/bin/$PRGNAM
   cd /usr/lib/ombi
   ./Ombi
 EOF
-chmod +x /usr/bin/$PRGNAM
+chmod +x $PKG/usr/bin/$PRGNAM
 
 find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
   | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
