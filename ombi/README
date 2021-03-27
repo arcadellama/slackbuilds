@@ -1,0 +1,34 @@
+Ombi is your friendly media request tool, automatically syncs with
+your media with your media servers!
+
+Here are some of the features Ombi has:
+
+  * Lets users request Movies, Music, and TV Shows (whether it
+    being the entire series, an entire season, or even single
+    episodes.)
+
+  * Easily manage your requests
+
+  * Allows you to set specific users to automatically have requests
+    approved and added to the relevant service
+    (Sonarr/Radarr/Lidarr/Couchpotato etc)
+
+  * User management system (supports plex.tv, Emby and local
+    accounts)
+
+  * A landing page that will give you the availability of your
+    Plex/Emby server and also add custom notification text to
+    inform your users of downtime.
+
+  * Allows your users to get custom notifications!
+
+  * Secure authentication using best practises
+
+  * Will show if the request is already on plex or even if it's
+    already monitored.
+
+  * Automatically updates the status of requests when they are
+    available on Plex/Emby
+
+  * Slick, responsive and mobile friendly UI
+
