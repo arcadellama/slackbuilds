@@ -1,0 +1,18 @@
+coverage
+flake8
+mock
+pytest
+pytest-cov
+tox
+babel
+
+#
+# Plugin Dependencies
+#
+
+# Provides xmpp:// support
+sleekxmpp
+slixmpp; python_version >= '3.7'
+
+# Provides growl:// support
+gntp
