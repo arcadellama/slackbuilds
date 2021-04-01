@@ -5,15 +5,15 @@
 # You must make exactly 11 lines for the formatting to be correct.  It's also
 # customary to leave one space after the ':' except on otherwise blank lines.
 
-       |-----handy-ruler------------------------------------------------------|
-reddio: reddio (short description of app)
+      |-----handy-ruler------------------------------------------------------|
+reddio: reddio (command-line interface for Reddit)
 reddio:
-reddio: Long description of reddio, wrapped at 71 characters *after* the
-reddio: colon following "reddio" (and the 'handy ruler' should start at
-reddio: that colon and be exactly 71 characters long).
-reddio: If there is room, there might be a link to the homepage of the
-reddio: application on one of these lines, but it's not necessary.
+reddio: reddio is a command-line interface for Reddit written in POSIX sh. 
 reddio:
-reddio: The maximum number of lines prefixed by "reddio:" is 11.
-reddio: Lines without any other text should *not* have a space after the :
+reddio: Homepage: <https://gitlab.com/aaronNG/reddio>
+reddio:
+reddio:
+reddio:
+reddio:
+reddio:
 reddio:
