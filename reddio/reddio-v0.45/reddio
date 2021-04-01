@@ -1,0 +1,453 @@
+#!/bin/sh
+#
+# shellcheck disable=1090,2154
+# Disable warnings about non-constant sources (1090): We check all sourced
+# files at the bottom of this script separately
+# We don't need shellcheck warnings about potentially unassigned
+# variables (2154)
+#
+#
+# A command-line interface for Reddit written in POSIX sh
+#
+# Dependencies: curl for downloading from the reddit api
+#               coreutils, sed
+#               jq for parsing json data
+# Optional:     nc for authorizing this client
+
+prog_name=${0##*/}
+version=0.45
+version_text="$prog_name, version $version"
+options='c: h q s: v V'
+synopsis="Usage: $prog_name [-chqsvV]"
+description='a command-line interface for Reddit'
+help_text="$synopsis [<command> [<args>]]
+
+$description
+
+  -c <file>     Use <file> instead of the default config
+  -s <session>  Use <session> instead of the default
+  -q            Quiet
+  -v            Verbose mode
+  -V            Print version information and exit
+
+Commands:
+  comment delete edit login logout message print submit
+  (un)follow (un)hide (un)marknsfw (un)read (un)save
+  (un)spoiler (un)subscribe upvote downvote unvote
+
+A unique part, of the beginning of the command, is also valid. For
+example, 'p' for print or 'logi' for login."
+
+main()
+{
+	config_path=${XDG_CONFIG_HOME:-${HOME}/.config}/reddio
+	config_file=$config_path/config
+	token_file=$config_path/sessions/default
+	www_url=https://www.reddit.com/api/v1
+	api_url=https://api.reddit.com
+	oauth_url=https://oauth.reddit.com
+	client_id=WhNvhZrbky1-ZQ
+	curl="curl --silent --fail --globoff --compressed \
+		-u $client_id: \
+		-H Accept:application/json \
+		-A Client/$client_id"
+
+	logged_in=false
+	set_defaults
+	parse_options "$@"
+
+	# Shift until only trailing arguments remain
+	shift $((OPTIND-1))
+	OPTIND=1
+
+	# Sub-command defaulting to print if omitted
+	_command="${1:-print}"
+	[ $# -ne 0 ] && shift
+
+	# Check if sub-command is valid before doing anything else
+	case $_command in
+		c|co|com|comm|comme|commen|comment)
+			_command=send; set -- comment "$@"
+		;;
+		de|del|dele|delete)
+			_command=post; set -- delete "$@"
+		;;
+		do|dow|down|downv|downvo|downvote)
+			_command=post; set -- downvote "$@"
+		;;
+		e|ed|edi|edit)
+			_command=send; set -- edit "$@"
+		;;
+		f|fo|fol|foll|follo|follow)
+			_command=post; set -- follow "$@"
+		;;
+		h|hi|hid|hide)
+			_command=post; set -- hide "$@"
+		;;
+		logi|login)
+			_command=login
+		;;
+		logo|logou|logout)
+			_command=logout
+		;;
+		me|mes|mess|messa|messag|message)
+			_command=send; set -- message "$@"
+		;;
+		ma|mar|mark|markn|markns|marknsf|marknsfw)
+			_command=post; set -- marknsfw "$@"
+		;;
+		p|pr|pri|prin|print)
+			_command=print
+		;;
+		r|re|rea|read)
+			_command=post; set -- read "$@"
+		;;
+		sa|sav|save)
+			_command=post; set -- save "$@"
+		;;
+		sp|spo|spoi|spoil|spoile|spoiler)
+			_command=post; set -- spoiler "$@"
+		;;
+		subm|submi|submit)
+			_command=send; set -- submit "$@"
+		;;
+		subs|subsc|subscr|subscri|subscrib|subscribe)
+			_command=post; set -- subscribe "$@"
+		;;
+		unf|unfo|unfol|unfoll|unfollo|unfollow)
+			_command=post; set -- unfollow "$@"
+		;;
+		unh|unhi|unhid|unhide)
+			_command=post; set -- unhide "$@"
+		;;
+		unm|unma|unmar|unmark|unmarkn|unmarkns|unmarknsf \
+		|unmarknsfw)
+			_command=post; set -- unmarknsfw "$@"
+		;;
+		unr|unre|unrea|unread)
+			_command=post; set -- unread "$@"
+		;;
+		unsa|unsav|unsave)
+			_command=post; set -- unsave "$@"
+		;;
+		unsp|unspo|unspoi|unspoil|unspoile|unspoiler)
+			_command=post; set -- unspoiler "$@"
+		;;
+		unsu|unsub|unsubs|unsubsc|unsubscr|unsubscri \
+		|unsubscrib|unsubscribe)
+			_command=post; set -- unsubscribe "$@"
+		;;
+		unv|unvo|unvot|unvote)
+			_command=post; set -- unvote "$@"
+		;;
+		up|upv|upvo|upvot|upvote)
+			_command=post; set -- upvote "$@"
+		;;
+		*)
+			usage "unknown command '$_command'"
+		;;
+	esac
+
+	$option_h && usage
+	$option_V && version
+	$option_q && {
+		info() { :; }
+		warn() { :; }
+		debug() { :; }
+	}
+	$option_v || {
+		debug() { :; }
+	}
+	$option_c && config_file=$param_c
+	$option_s && token_file=$config_path/sessions/$param_s
+
+	# curl and jq are mandatory dependencies
+	check_deps curl jq ||
+		exit 1
+
+	# Warn about non-existent config file when -c is used
+	if $option_c && ! [ -e "$config_file" ]; then
+		warn "config file '$config_file' does not exist"
+	else
+		load_config "$config_file"
+	fi
+
+	# Library path environment variable has precedence over config
+	lib_dir=${REDDIO_LIB:-${lib_dir:-/usr/local/share/reddio}}
+
+	# Make sure the lib directory can be found
+	[ -d "$lib_dir" ] || {
+		error 1 "library directory does not exist at '$lib_dir'." \
+			'The location is set by either using the' \
+			'REDDIO_LIB environment variable or by setting' \
+			'lib_dir in the config file located at' \
+			"'$config_file'"
+	}
+
+	# Warn about non-existent sessions when -s is used
+	if
+		[ $_command != login ] &&
+		$option_s &&
+		! [ -r "$token_file" ]
+	then
+		warn "session '${token_file##*/}' does not exist"
+	fi
+
+	debug "Running sub-command '$_command $*'"
+
+	# Run sub-command
+	. "$lib_dir/cmd-${_command}.sh"
+	cmd_$_command "$@"
+}
+
+##########################################################################
+
+# Disable shellcheck warnings about unused variables
+# shellcheck disable=2034
+set_defaults() {
+	set -ef
+
+	trap 'clean_exit' EXIT TERM
+	trap 'clean_exit HUP' HUP
+	trap 'clean_exit INT' INT
+
+	IFS=' '
+	# Word splitting is intended here
+	# shellcheck disable=2046
+	set -- $(printf '\n \r \t \033')
+	nl=$1 cr=$2 tab=$3 esc=$4
+
+	IFS=\ $tab
+	oifs=$IFS
+}
+
+# For a given optstring, this function sets the variables
+# "option_<optchar>" to true/false and param_<optchar> to its parameter
+parse_options() {
+	for _opt in $options; do
+		# The POSIX spec does not say anything about spaces in the
+		# optstring, so lets get rid of them
+		_optstring=${_optstring:-}$_opt
+		eval "option_${_opt%:}=false"
+		unset "param_${_opt%:}"
+	done
+
+	while getopts ":$_optstring" _opt; do case $_opt in
+		:) usage "option '$OPTARG' requires a parameter" ;;
+		\?) usage "unrecognized option '$OPTARG'" ;;
+		*)
+			eval "option_$_opt=true"
+			[ -n "$OPTARG" ] &&
+				eval "param_$_opt=\$OPTARG"
+		;;
+	esac; done
+	unset _opt _optstring OPTARG
+}
+
+stderr()  { printf '%s: %s\n' "$prog_name" "$*" >&2; }
+info()    { stderr "$*"; }
+warn()    { stderr "$*"; }
+debug()   { printf '\033[30;43m Debug \033[0m %s\n' "$*" >&2; }
+version() { printf '%s\n' "$version_text"; exit; }
+
+error() {
+	_error=$1
+	shift
+	stderr "$*"
+	exit "$_error"
+}
+
+usage() {
+	if [ $# -ne 0 ]; then
+		exec >&2
+		printf '%s: %s\n\n' "$prog_name" "$*"
+	fi
+	printf '%s\n' "$help_text"
+	exit ${1:+1}
+}
+
+print_help()
+{
+	_command=$1
+	_synopsis=$2
+	_title=$3
+	_width=-$4
+	shift 4
+
+	_opts=$(printf "  %s %${_width}s %s\n" "$@")
+
+	printf "%s %s\n\n%s%s\n\n%s\n%s %${_width}s %s" \
+		"$synopsis${_command:+ $_command}" \
+		"$_synopsis" \
+		"$description" \
+		"${_title:+ - $_title}" \
+		"$_opts" \
+		'  -h' '' 'Print this help and exit'
+
+	unset _command _synopsis _title _width _opts
+}
+
+check_deps()
+{
+	debug "Checking dependencies '$*'"
+
+	for _dep do
+		if ! command -v "$_dep" >/dev/null 2>&1; then
+			warn "missing dependency '$_dep'"
+			return 1
+		fi
+	done
+	unset _dep
+}
+
+query()
+{
+	_url=$1
+	shift
+
+	# shellcheck disable=2086
+	if check_token; then
+		set -- $curl -H "Authorization: Bearer $access_token" \
+			"$@" "${oauth_url}/$_url"
+	else
+		set -- $curl "$@" "${api_url}/$_url"
+	fi
+	unset _url
+
+	debug "Running '$*'"
+
+	# Run curl command with args
+	"$@"
+}
+
+check_token()
+{
+	$logged_in || return 1
+
+	# Refresh our token if necessary
+	if [ "$(date +%s)" -ge "$token_expires" ]; then
+		info 'refreshing expired access token'
+
+		. "$lib_dir"/refresh-token.sh
+
+		if refresh_token; then
+			debug 'Token refreshed'
+			logged_in=true
+			return 0
+		else
+			debug 'Failed to refresh token'
+			logged_in=false
+			return 1
+		fi
+	fi
+}
+
+logged_in()
+{
+	$logged_in && return 0
+
+	# Load saved token data
+	if load_token; then
+		logged_in=true
+		debug 'Login successful'
+		return 0
+	else
+		logged_in=false
+		debug 'Login failed'
+		return 1
+	fi
+}
+
+write_token()
+{
+	[ -d "$config_path/sessions" ] ||
+		mkdir -p -- "$config_path/sessions"
+
+	if [ -n "$1" ] && [ -n "$2" ] && [ -n "$3" ]; then
+		debug "Writing token data to '$token_file'"
+		printf '%s\n' "$1 $2 $3" >"$token_file"
+
+		debug 'Setting permission of token file to 600'
+		chmod 600 "$token_file"
+	else
+		error 1 'attempted to write an empty' \
+			'string to the token file'
+	fi
+}
+
+delete_token()
+{
+	if [ -e "$token_file" ]; then
+		debug "Deleting token file '$token_file'"
+		rm -- "$token_file"
+	else
+		debug 'Called delete_token but token' \
+			"file '$token_file' does not exist"
+	fi
+}
+
+load_token()
+{
+	debug 'Loading saved token data'
+
+	[ -r "$token_file" ] || {
+		debug "Token file '$token_file' does" \
+			'not exist or is not readable'
+		return 1
+	}
+
+	debug "Loading token data from '$token_file'"
+
+	read -r token_expires access_token refresh_token <"$token_file"
+
+	if
+		[ -z "$token_expires" ] ||
+		[ -z "$access_token" ] ||
+		[ -z "$refresh_token" ]
+	then
+		warn "malformed data in token file '$token_file'"
+		return 1
+	fi
+}
+
+load_config()
+{
+	_file=$1
+
+	unset -v editor format lib_dir
+
+	[ -e "$_file" ] && [ -r "$_file" ] ||
+		return 0
+
+	debug "Loading config from '$_file'"
+
+	. "$_file"
+	unset _file
+}
+
+clean_exit() {
+	_exit_status=$?
+	trap - EXIT
+
+	[ $# -ne 0 ] && {
+		trap - "$1"
+		kill -s "$1" -$$
+	}
+	exit "$_exit_status"
+}
+
+main "$@"
+exit $?
+
+# Dummy for shellcheck
+# `shellcheck -ax reddio` to check all files
+# :r !printf '. \%s\n' ./share/reddio/*.sh
+. ./share/reddio/cmd-login.sh
+. ./share/reddio/cmd-logout.sh
+. ./share/reddio/cmd-post.sh
+. ./share/reddio/cmd-print.sh
+. ./share/reddio/cmd-send.sh
+. ./share/reddio/color-formats.sh
+. ./share/reddio/oauth.sh
+. ./share/reddio/pretty-time.sh
+. ./share/reddio/refresh-token.sh

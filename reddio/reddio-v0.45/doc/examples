@@ -1,0 +1,73 @@
+Login using the default session
+	reddio login
+
+Login using a different session
+	reddio -s throwaway login
+
+Submit a comment using that session
+	reddio -s throwaway comment -t 'Hello, world!' t3_anid36
+
+Print the top 3 of multiple subreddits
+	reddio print -l 3 r/commandline+linux/top
+
+Print the comments of a submission sorted by post date
+The t3_ prefix for the submission id is optional
+	reddio print -s new comments/t3_anid36
+
+Print only the URLs of the 50 most controversial submission of the last week
+	reddio print -l 50 -t week -f '$url$nl' r/commandline/controversial
+
+Page through the submissions of a subreddit
+	reddio print -l 10 r/commandline/new
+	# print the next 10 new submissions after "t3_anid36"
+	reddio print -l 10 -a t3_anid36 r/commandline/new
+
+Print the content of a multireddit sorted by post date
+	reddio print user/yourusername/m/multiname/new
+
+Print info about a user
+	reddio print user/ausername/about
+
+Print the all-time top 5 comments of a user
+	reddio print -l 5 -s top -t all user/ausername/comments
+
+Print info about a subreddit
+	reddio print r/commandline/about
+
+Check if you are subscribed to a certain subreddit
+	reddio print -f '${subscribed:+you are subscribed to $name$nl}' r/linux/about
+
+Subscribe to multiple subreddits
+	reddio subscribe commandline linux
+
+Check for new messages
+	reddio print -l 1 -f '${new:+NEW MESSAGES!$nl}' message/unread
+
+Print your message inbox
+	reddio print -l 10 message/inbox
+
+Get the body of a comment, e.g. for editing posts
+	reddio print -f '$text$nl' info/t1_anid36
+
+Upvote something
+	reddio upvote t1_anid36
+
+Remove your vote from multiple things
+	reddio unvote t1_anid11 t3_anid22 t1_anid33
+
+Write a toplevel comment on a submission
+	reddio comment -t 'This is a toplevel comment' t3_anid36
+
+Compose a new private message
+	reddio message -t 'Hello there' ausername 'This is the subject'
+
+Reply to a private message in a text editor by omitting the -t option
+The editor is choosen by looking at the following variables:
+REDDIO_EDITOR -> editor (config variable) -> VISUAL -> EDITOR
+	reddio message t4_anid36
+
+Submit a link to r/test
+	reddio submit -l http://localhost r/test "Testing a link submission using reddio"
+
+Submit a self-post to r/test (the 'r/' prefix is optional)
+	reddio submit -t "Hello, World!" test "Submission title"
