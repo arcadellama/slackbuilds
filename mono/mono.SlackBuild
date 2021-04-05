@@ -5,11 +5,11 @@
 # Updated by Andre Barboza <bmg.andre@gmail.com>
 
 PRGNAM=mono
-VERSION=${VERSION:-6.12.0.122}
-MAJORVERSION=${MAJORVERSION:-6.12.0.122}
+VERSION=${VERSION:-5.20.1.34}
+MAJORVERSION=${MAJORVERSION:-5.20.1.34}
 BIN_VERSION=${BIN_VERSION:-4.4.2.11}
 BUILD=${BUILD:-1}
-TAG=${TAG:-_llama}
+TAG=${TAG:-_SBo}
 
 if [ -z "$ARCH" ]; then
   case "$( uname -m )" in
@@ -20,9 +20,9 @@ if [ -z "$ARCH" ]; then
 fi
 
 CWD=$(pwd)
-TMP=${TMP:-/home/tmp/SBo}
+TMP=${TMP:-/tmp/SBo}
 PKG=$TMP/package-$PRGNAM
-OUTPUT=${OUTPUT:-/home/tmp}
+OUTPUT=${OUTPUT:-/tmp}
 
 if [ "$ARCH" = "i586" ]; then
    SLKCFLAGS="-O2 -march=i586 -mtune=i686"
@@ -48,7 +48,7 @@ rm -rf $PKG
 mkdir -p $TMP $PKG $OUTPUT
 cd $TMP
 rm -rf $PRGNAM-$VERSION
-tar xvf $CWD/$PRGNAM-$VERSION.tar.xz
+tar xvf $CWD/$PRGNAM-$VERSION.tar.bz2
 cd $PRGNAM-$MAJORVERSION
 
 chown -R root:root .
