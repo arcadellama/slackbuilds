@@ -72,7 +72,7 @@ find -L . \
 
 # Patch to sign dbus-sharp.dll to avoid 'add to GAC error'
 # from https://github.com/mono/dbus-sharp/pull/72
-patch $CWD/Makefile.am.patch $PWD/src/Makefile.am
+patch src/Makefile.am < $CWD/Makefile.am.patch
 
 # We set libdir to /usr/lib because that is where mono lives.
 # We will fix the pkgconfig location on 64bit later.
