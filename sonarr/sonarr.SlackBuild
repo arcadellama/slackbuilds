@@ -59,24 +59,29 @@ rm -rf $PWD/Sonarr.Update
 mkdir -p $PKG/usr/lib/$PRGNAM/bin
 cp -a $PWD/* $PKG/usr/lib/sonarr/bin
 
-cp -a $CWD/package_info $PKG/usr/lib/$PRGNAM/package_info
-echo "PackageVersion=$VERSION-$ARCH-$BUILD$TAG" >> $PKG/usr/lib/$PRGNAM/package_info
-
 mkdir -p $PKG/usr/bin
 cat << EOF > $PKG/usr/bin/$PRGNAM
-  #!/bin/sh
-  /usr/bin/mono --debug /usr/lib/sonarr/bin/Sonarr.exe
+#!/bin/bash
+if [ -x /usr/bin/mono ]; then
+    /usr/bin/mono --debug /usr/lib/sonarr/bin/Sonarr.exe
+fi
 EOF
-chmod +x $PKG/usr/bin/$PRGNAM
 
 find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
   | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
+
+mkdir -p $PKG/etc/rc.d
+cp -a $CWD/rc.$PRGNAM $PKG/etc/rc.d/rc.$PRGNAM.new
+
+cp -a $CWD/package_info $PKG/usr/lib/$PRGNAM/package_info
+echo "PackageVersion=$VERSION-$ARCH-$BUILD$TAG" >> $PKG/usr/lib/$PRGNAM/package_info
 
 mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
 cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
 
 mkdir -p $PKG/install
 cat $CWD/slack-desc > $PKG/install/slack-desc
+cat $CWD/doinst.sh > $PKG/install/doinst.sh
 
 cd $PKG
 /sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}

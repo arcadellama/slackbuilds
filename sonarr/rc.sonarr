@@ -1,0 +1,44 @@
+#!/bin/sh
+# init script for Sonarr
+
+RUN_AS=sonarr
+DAEMON="/usr/bin/mono --debug /usr/lib/sonarr/bin/Sonarr.exe"
+DAEMON_OPTS="-nobrowser -data=/var/lib/sonarr"
+PID=/var/lib/sonarr/sonarr.pid
+
+set -e
+
+start() {
+    if [ ps aux | grep -v grep | grep $DAEMON == $PID ]; then
+	echo "$DAEMON is already running."
+    else
+	rm -rf $PID
+	echo "Starting $DAEMON..."
+	su - $RUNAS -s /bin/bash -c \
+	    'nohup $DAEMON $DAEMON_OPTS >/dev/null 2>&1 < /dev/null &'
+    fi
+}
+
+stop() {
+    echo "Stopping $DAEMON..."
+    kill $(cat $PID)
+    exit 1  
+}
+
+case "$1" in
+    start)
+	start()
+	;;
+    stop)
+	stop()
+	;;
+    restart)
+	stop()
+	wait 5
+	start()
+    *)
+	echo "Usage start|stop|restart"
+	;;
+esac
+
+exit 0

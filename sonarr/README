@@ -3,3 +3,22 @@ multiple RSS feeds for new episodes of your favorite shows and will
 grab, sort and rename them. It can also be configured to
 automatically upgrade the quality of files already downloaded when
 a better quality format becomes available.
+
+To run package installs an init script at '/etc/rc.d/rc.sonarr' to
+run as a daemon.
+
+By default the user is 'sonarr' and the data directory is
+'/var/lib/sonarr'.
+
+Make sure you have the correct user and group and data directory
+permissions. If you change any of the following be sure to update
+it in '/etc/rc.d/rc.sonarr'.
+
+  # useradd -r -d /var/lib/sonarr sonarr
+  # usermod -aG sonarr sonarr
+  # mkdir -p /var/lib/sonarr 
+  # chown -R sonarr:sonarr /var/lib/sonarr
+
+To run at start-up make sure your init script is executable:
+
+  # chmod +x /etc/rc.d/rc.sonarr
