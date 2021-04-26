@@ -5,16 +5,22 @@ PRG_USER=sonarr
 PRG_GROUP=sonarr
 DATA_DIR="/var/lib/$PRGNAM"
 BASE_DIR="/opt/$PRGNAM"
-DAEMON="/usr/bin/mono --debug $BASE_DIR/${PRGNAM^}"
+DAEMON="/usr/bin/mono --debug $BASE_DIR/${PRGNAM^}.exe"
 DAEMON_OPTS="-nobrowser -data=$DATA_DIR"
 PIDFILE=$DATA_DIR/$PRGNAM.pid
 
 set -e
 
+is_running() {
+    ps -p $(cat $PIDFILE) -o comm= 2>/dev/null
+    RETVAL=$?
+    return $RETVAL
+}
+
 start() {
 
     # Create data directory if it doesn't exist
-    if [[ ! -d $DATA_DIR ]]; then
+    if [ ! -d $DATA_DIR ]; then
 	mkdir -p $DATA_DIR
     fi
 
@@ -22,36 +28,37 @@ start() {
 	chown -R $PRG_USER:$PRG_GROUP $BASE_DIR
 	chown -R $PRG_USER:$PRG_GROUP $DATA_DIR
 
-    if [[ -e $PIDFILE ]]; then
-	ps -p $(cat $PIDFILE) -o comm= 2>/dev/null
-	RETVAL=$?
-	if [[ $RETVAL == 0 ]]; then
-	    echo "$PRGNAM appears to already be running."
+    if [ is_running ]; then
+	echo "$PRGNAM appears to already be running."
 	    exit 1
-	fi
-    else 
-	rm -f $PIDFILE
+	else 
+	    echo "Starting $PRGNAM."
+	    su - $PRG_USER -s /bin/bash -c "nohup $DAEMON $DAEMON_OPTS >/dev/null 2>&1 < /dev/null &"
     fi
 
-    echo "Starting $PRGNAM..."
-    su - $PRG_USER -s /bin/bash -c 'nohup $DAEMON $DAEMON_OPTS >/dev/null 2>&1 < /dev/null &'
-    exit 0
 }
 
 stop() {
-    if [[ ! -e $PIDFILE ]]; then
+    if [ is_running ]; then
+	echo "Stopping $PRGNAM..."
+	kill $(cat $PIDFILE)
+	rm -r $PIDFILE
+	
+	for i in {0..4}
+	do
+	    echo " . "
+	    sleep 1
+	done
+
+	if [ is_running ]; then
+	    echo "Error stopping $PRGNAM."
+	    exit 1
+	else
+	    echo "done."
+	fi
+    else
 	echo "$PRGNAM does not appear to be running."
 	exit 1
-    else
-	kill $(cat $PIDFILE) 2>/dev/null
-	RETVAL=$?
-	if [[ $RETVAL != 0 ]]; then
-	    echo "$PRGNAM does not appear to be running."
-	else
-	    echo "Stopping $PRGNAM..."
-	fi
-	rm -r $PIDFILE
-	exit $RETVAL
     fi
 }
 
@@ -62,13 +69,26 @@ case "$1" in
     stop)
 	stop
 	;;
+    status)
+	if [ is_running ]; then
+	    echo "$PRGNAM is running."
+	else
+	    echo "$PRGNAM is not running."
+	    exit 1
+	fi
     restart)
+	echo "Restarting"
 	stop
-	sleep 5
+	for i in {0..4}
+	do
+	    echo " . "
+	    sleep 1
+	done
 	start
 	;;
     *)
-	echo "Usage start|stop|restart"
+	echo "Usage start|stop|restart|status"
+	exit 1
 	;;
 esac
 
