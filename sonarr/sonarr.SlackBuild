@@ -27,6 +27,8 @@ VERSION=${VERSION:-3.0.6.1196}
 BUILD=${BUILD:-1}
 TAG=${TAG:-_SBo}
 
+SONARR_USER=${SONARR_USER:-sonarr}
+
 if [ -z "$ARCH" ]; then
   case "$( uname -m )" in
     i?86) ARCH=i586 ;;
@@ -42,6 +44,18 @@ OUTPUT=${OUTPUT:-/tmp}
 
 set -e
 
+# Bail if user isn't valid on the system
+if ! getent passwd $SONARR_USER 1>dev/null 2>dev/null; then
+    cat << EOF
+
+    You must have a $SONARR_USER to run this script
+
+    # useradd -r -d /var/lib/$PRGNAM -g $SONARR_USER $SONARR_USER
+
+EOF
+  exit 1
+fi
+
 rm -rf $PKG
 mkdir -p $TMP $PKG $OUTPUT
 cd $TMP
@@ -56,14 +70,15 @@ find -L . \
   -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
 
 rm -rf $PWD/${PRGNAM^}.Update
-mkdir -p $PKG/opt/$PRGNAM/
-cp -a $PWD/* $PKG/opt/$PRGNAM
+
+mkdir -p $PKG/usr/lib/$PRGNAM/
+cp -a $PWD/* $PKG/usr/lib/$PRGNAM
 
 find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
   | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
 
 mkdir -p $PKG/etc/rc.d
-cp -a $CWD/rc.$PRGNAM > $PKG/etc/rc.d/rc.$PRGNAM.new
+sed -e "s/@SONARR_USER@/$SONARR_USER/g" $CWD/rc.$PRGNAM > $PKG/etc/rc.d/rc.$PRGNAM.new
 
 cp -a $CWD/package_info $PKG/opt/$PRGNAM/package_info
 echo "PackageVersion=$VERSION-$ARCH-$BUILD$TAG" >> $PKG/opt/$PRGNAM/package_info

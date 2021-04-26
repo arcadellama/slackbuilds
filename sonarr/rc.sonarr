@@ -1,8 +1,7 @@
 #!/bin/bash
 
 PRGNAM=sonarr
-PRG_USER=@PRG_USER@
-PRG_GROUP=@PRG_GROUP@
+SONARR_USER=@SONARR_USER@
 DATA_DIR="/var/lib/$PRGNAM"
 BASE_DIR="/opt/$PRGNAM"
 DAEMON="/usr/bin/mono --debug $BASE_DIR/${PRGNAM^}.exe"
@@ -24,16 +23,15 @@ start() {
 	mkdir -p $DATA_DIR
     fi
 
-    # Make sure we own the base and data directory
-	chown -R $PRG_USER:$PRG_GROUP $BASE_DIR
-	chown -R $PRG_USER:$PRG_GROUP $DATA_DIR
+    # Make sure we own the data directory
+	chown -R $SONARR_USER $DATA_DIR
 
     if is_running; then
 	echo "$PRGNAM appears to already be running."
 	    exit 1
 	else 
 	    echo "Starting $PRGNAM."
-	    su - $PRG_USER -s /bin/bash -c "nohup $DAEMON $DAEMON_OPTS >/dev/null 2>&1 < /dev/null &"
+	    su - $SONARR_USER -s /bin/bash -c "nohup $DAEMON $DAEMON_OPTS >/dev/null 2>&1 < /dev/null &"
     fi
 
 }

@@ -4,9 +4,14 @@ grab, sort and rename them. It can also be configured to
 automatically upgrade the quality of files already downloaded when
 a better quality format becomes available.
 
-A sample daemon script is installed at '/etc/rc.d/rc.sonarr'.
-By default the user is 'sonarr' and the group is 'sonarr.' To use
-these defaults, you could create them with:
+This is intended to be run as a nonprivileged user - by default, the
+build script uses "sonarr" as the user and /var/lib/sonarr as the
+default $HOME:
 
   # useradd -r -c "Sonarr User" -d /var/lib/sonarr -g sonarr sonarr
+
+If you wish to change the default user, e.g. to use the "plex" user,
+then run the script as follows:
+
+  SONARR_USER=plex ./sonarr.SlackBuild
 
