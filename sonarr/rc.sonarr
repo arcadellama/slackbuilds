@@ -23,7 +23,7 @@ start() {
 	chown -R $PRG_USER:$PRG_GROUP $DATA_DIR
 
     if [[ -e $PIDFILE ]]; then
-	ps -p $PIDFILE -o comm= 2>/dev/null
+	ps -p $(cat $PIDFILE) -o comm= 2>/dev/null
 	RETVAL=$?
 	if [[ $RETVAL == 0 ]]; then
 	    echo "$PRGNAM appears to already be running."
@@ -43,7 +43,7 @@ stop() {
 	echo "$PRGNAM does not appear to be running."
 	exit 1
     else
-	killall $(cat $PIDFILE) 2>/dev/null
+	kill $(cat $PIDFILE) 2>/dev/null
 	RETVAL=$?
 	if [[ $RETVAL != 0 ]]; then
 	    echo "$PRGNAM does not appear to be running."
@@ -66,6 +66,7 @@ case "$1" in
 	stop
 	sleep 5
 	start
+	;;
     *)
 	echo "Usage start|stop|restart"
 	;;
