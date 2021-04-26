@@ -4,20 +4,14 @@ grab, sort and rename them. It can also be configured to
 automatically upgrade the quality of files already downloaded when
 a better quality format becomes available.
 
-To run package installs an init script at '/etc/rc.d/rc.sonarr' to
-run as a daemon.
+Sonarr should not be run as root. By default the user is 'sonarr'
+and the group is 'sonarr.' You can create this user and group like this: 
 
-By default the user is 'sonarr' and the data directory is
-'/var/lib/sonarr'.
+  # useradd -r -c "Sonarr User" -m /var/lib/sonarr -g sonarr sonarr
 
-Make sure you have the correct user and group and data directory
-permissions. If you change any of the following be sure to update
-it in '/etc/rc.d/rc.sonarr'.
+If you don't want to use the defualts, you can change the default user and group:
 
-  # useradd -r -d /var/lib/sonarr sonarr
-  # usermod -aG sonarr sonarr
-  # mkdir -p /var/lib/sonarr 
-  # chown -R sonarr:sonarr /var/lib/sonarr
+  # USER=youruser GROUP=yourgroup ./sonarr.SlackBuild
 
 To run at start-up make sure your init script is executable:
 
