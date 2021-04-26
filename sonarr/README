@@ -4,15 +4,9 @@ grab, sort and rename them. It can also be configured to
 automatically upgrade the quality of files already downloaded when
 a better quality format becomes available.
 
-Sonarr should not be run as root. By default the user is 'sonarr'
-and the group is 'sonarr.' You can create this user and group like this: 
+A sample daemon script is installed at '/etc/rc.d/rc.sonarr'.
+By default the user is 'sonarr' and the group is 'sonarr.' To use
+these defaults, you could create them with:
 
-  # useradd -r -c "Sonarr User" -m /var/lib/sonarr -g sonarr sonarr
+  # useradd -r -c "Sonarr User" -d /var/lib/sonarr -g sonarr sonarr
 
-If you don't want to use the defualts, you can change the default user and group:
-
-  # USER=youruser GROUP=yourgroup ./sonarr.SlackBuild
-
-To run at start-up make sure your init script is executable:
-
-  # chmod +x /etc/rc.d/rc.sonarr

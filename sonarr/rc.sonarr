@@ -1,51 +1,65 @@
 #!/bin/bash
 
 PRGNAM=sonarr
-RUN_AS=@USER@
-DAEMON="/usr/bin/mono --debug /opt/$PRGNAM/${PRGNAM^}"
+PRG_USER=sonarr
+PRG_GROUP=sonarr
 DATA_DIR="/var/lib/$PRGNAM"
+DAEMON="/usr/bin/mono --debug /opt/$PRGNAM/${PRGNAM^}"
 DAEMON_OPTS="-nobrowser -data=$DATA_DIR"
-PID=$DATA_DIR/$PRGNAM.pid
-
-if [[ ! -d $DATA_DIR ]]; then
-    mkdir -p $DATA_DIR
-    chown $RUN_AS $DATA_DIR
-fi
+PIDFILE=$DATA_DIR/$PRGNAM.pid
 
 set -e
 
 start() {
-    if [ ps aux | grep -v grep | grep $DAEMON == $PID ]; then
-	echo "$PRGNAM is already running."
-    else
-	rm -rf $PID
-	echo "Starting $PRGNAM..."
-	su - $RUNAS -s /bin/bash -c \
-	    'nohup $DAEMON $DAEMON_OPTS >/dev/null 2>&1 < /dev/null &'
+    if [[ ! -d $DATA_DIR ]]; then
+	mkdir -p $DATA_DIR
+	chown $PRG_USER:$PRG_GROUP $DATA_DIR
     fi
+
+    if [[ -e $PIDFILE ]]; then
+	ps -p $PIDFILE -o comm= 2>/dev/null
+	RETVAL=$?
+	if [[ $RETVAL == 0 ]]; then
+	    echo "$PRGNAM appears to already be running."
+	    exit 1
+	fi
+    else 
+	rm -rf $PIDFILE
+    fi
+
+    echo "Starting $PRGNAM..."
+    su - $PRG_USER -s /bin/bash -c 'nohup $DAEMON $DAEMON_OPTS >/dev/null 2>&1 < /dev/null &'
+    exit 0
 }
 
 stop() {
-    if [ ps aux | grep -v grep | grep $DAEMON == $PID ]; then
-	echo "Stopping $PRGNAM..."
-	kill $(cat $PID)
-    else
+    if [[ ! -e $PIDFILE ]]; then
 	echo "$PRGNAM does not appear to be running."
+	exit 1
+    else
+	killall $(cat $PIDFILE) 2>/dev/null
+	RETVAL=$?
+	if [[ $RETVAL != 0 ]]; then
+	    echo "$PRGNAM does not appear to be running."
+	else
+	    echo "Stopping $PRGNAM..."
+	fi
+	rm -r $PIDFILE
+	exit $RETVAL
     fi
-    exit 1  
 }
 
 case "$1" in
     start)
-	start()
+	start
 	;;
     stop)
-	stop()
+	stop
 	;;
     restart)
-	stop()
-	wait 5
-	start()
+	stop
+	sleep 5
+	start
     *)
 	echo "Usage start|stop|restart"
 	;;
