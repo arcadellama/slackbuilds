@@ -27,9 +27,6 @@ VERSION=${VERSION:-3.0.6.1196}
 BUILD=${BUILD:-1}
 TAG=${TAG:-_SBo}
 
-USER=${USER:-$PRGNAM}
-GROUP=${USER:-$PRGNAM}
-
 if [ -z "$ARCH" ]; then
   case "$( uname -m )" in
     i?86) ARCH=i586 ;;
@@ -44,14 +41,6 @@ PKG=$TMP/package-$PRGNAM
 OUTPUT=${OUTPUT:-/tmp}
 
 set -e
-
-# Check for valid user / group
-if [ ! grep -q "$USER:" /etc/passwd ]; then
-    echo "You must have a $USER user to run this script."
-    echo "For example, you can do the following as root: "
-    echo "    # useradd -r -c \"$PRGNAM User\" -m /usr/lib/$PRGNAM -g $GROUP $USER"
-    exit 1
-fi
 
 rm -rf $PKG
 mkdir -p $TMP $PKG $OUTPUT
@@ -69,7 +58,6 @@ find -L . \
 rm -rf $PWD/${PRGNAM^}.Update
 mkdir -p $PKG/opt/$PRGNAM/
 cp -a $PWD/* $PKG/opt/$PRGNAM
-chown -R $USER:$GROUP $PKG/opt/$PRGNAM
 
 find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
   | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true

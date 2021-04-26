@@ -4,17 +4,23 @@ PRGNAM=sonarr
 PRG_USER=sonarr
 PRG_GROUP=sonarr
 DATA_DIR="/var/lib/$PRGNAM"
-DAEMON="/usr/bin/mono --debug /opt/$PRGNAM/${PRGNAM^}"
+BASE_DIR="/opt/$PRGNAM"
+DAEMON="/usr/bin/mono --debug $BASE_DIR/${PRGNAM^}"
 DAEMON_OPTS="-nobrowser -data=$DATA_DIR"
 PIDFILE=$DATA_DIR/$PRGNAM.pid
 
 set -e
 
 start() {
+
+    # Create data directory if it doesn't exist
     if [[ ! -d $DATA_DIR ]]; then
 	mkdir -p $DATA_DIR
-	chown $PRG_USER:$PRG_GROUP $DATA_DIR
     fi
+
+    # Make sure we own the base and data directory
+	chown -R $PRG_USER:$PRG_GROUP $BASE_DIR
+	chown -R $PRG_USER:$PRG_GROUP $DATA_DIR
 
     if [[ -e $PIDFILE ]]; then
 	ps -p $PIDFILE -o comm= 2>/dev/null
@@ -24,7 +30,7 @@ start() {
 	    exit 1
 	fi
     else 
-	rm -rf $PIDFILE
+	rm -f $PIDFILE
     fi
 
     echo "Starting $PRGNAM..."
