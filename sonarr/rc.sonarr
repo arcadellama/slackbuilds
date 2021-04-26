@@ -1,27 +1,37 @@
-#!/bin/sh
-# init script for Sonarr
+#!/bin/bash
 
-RUN_AS=sonarr
-DAEMON="/usr/bin/mono --debug /usr/lib/sonarr/bin/Sonarr.exe"
-DAEMON_OPTS="-nobrowser -data=/var/lib/sonarr"
-PID=/var/lib/sonarr/sonarr.pid
+PRGNAM=sonarr
+RUN_AS=@USER@
+DAEMON="/usr/bin/mono --debug /opt/$PRGNAM/${PRGNAM^}"
+DATA_DIR="/var/lib/$PRGNAM"
+DAEMON_OPTS="-nobrowser -data=$DATA_DIR"
+PID=$DATA_DIR/$PRGNAM.pid
+
+if [[ ! -d $DATA_DIR ]]; then
+    mkdir -p $DATA_DIR
+    chown $RUN_AS $DATA_DIR
+fi
 
 set -e
 
 start() {
     if [ ps aux | grep -v grep | grep $DAEMON == $PID ]; then
-	echo "$DAEMON is already running."
+	echo "$PRGNAM is already running."
     else
 	rm -rf $PID
-	echo "Starting $DAEMON..."
+	echo "Starting $PRGNAM..."
 	su - $RUNAS -s /bin/bash -c \
 	    'nohup $DAEMON $DAEMON_OPTS >/dev/null 2>&1 < /dev/null &'
     fi
 }
 
 stop() {
-    echo "Stopping $DAEMON..."
-    kill $(cat $PID)
+    if [ ps aux | grep -v grep | grep $DAEMON == $PID ]; then
+	echo "Stopping $PRGNAM..."
+	kill $(cat $PID)
+    else
+	echo "$PRGNAM does not appear to be running."
+    fi
     exit 1  
 }
 

@@ -27,6 +27,9 @@ VERSION=${VERSION:-3.0.6.1196}
 BUILD=${BUILD:-1}
 TAG=${TAG:-_SBo}
 
+USER=${USER:-$PRGNAM}
+GROUP=${USER:-$PRGNAM}
+
 if [ -z "$ARCH" ]; then
   case "$( uname -m )" in
     i?86) ARCH=i586 ;;
@@ -42,6 +45,14 @@ OUTPUT=${OUTPUT:-/tmp}
 
 set -e
 
+# Check for valid user / group
+if [ ! grep -q "$USER:" /etc/passwd ]; then
+    echo "You must have a $USER user to run this script."
+    echo "For example, you can do the following as root: "
+    echo "    # useradd -r -c \"$PRGNAM User\" -m /usr/lib/$PRGNAM -g $GROUP $USER"
+    exit 1
+fi
+
 rm -rf $PKG
 mkdir -p $TMP $PKG $OUTPUT
 cd $TMP
@@ -55,26 +66,19 @@ find -L . \
  \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
   -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
 
-rm -rf $PWD/Sonarr.Update
-mkdir -p $PKG/usr/lib/$PRGNAM/bin
-cp -a $PWD/* $PKG/usr/lib/sonarr/bin
-
-mkdir -p $PKG/usr/bin
-cat << EOF > $PKG/usr/bin/$PRGNAM
-#!/bin/bash
-if [ -x /usr/bin/mono ]; then
-    /usr/bin/mono --debug /usr/lib/sonarr/bin/Sonarr.exe
-fi
-EOF
+rm -rf $PWD/${PRGNAM^}.Update
+mkdir -p $PKG/opt/$PRGNAM/
+cp -a $PWD/* $PKG/opt/$PRGNAM
+chown -R $USER:$GROUP $PKG/opt/$PRGNAM
 
 find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
   | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
 
 mkdir -p $PKG/etc/rc.d
-cp -a $CWD/rc.$PRGNAM $PKG/etc/rc.d/rc.$PRGNAM.new
+sed -e "s/@USER@/$USER/g" $CWD/rc.$PRGNAM > $PKG/etc/rc.d/rc.$PRGNAM.new
 
-cp -a $CWD/package_info $PKG/usr/lib/$PRGNAM/package_info
-echo "PackageVersion=$VERSION-$ARCH-$BUILD$TAG" >> $PKG/usr/lib/$PRGNAM/package_info
+cp -a $CWD/package_info $PKG/opt/$PRGNAM/package_info
+echo "PackageVersion=$VERSION-$ARCH-$BUILD$TAG" >> $PKG/opt/$PRGNAM/package_info
 
 mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
 cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
