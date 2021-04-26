@@ -45,7 +45,7 @@ OUTPUT=${OUTPUT:-/tmp}
 set -e
 
 # Bail if user isn't valid on the system
-if ! getent passwd $SONARR_USER 1>dev/null 2>dev/null; then
+if getent passwd $SONARR_USER 1>dev/null 2>dev/null; then
     cat << EOF
 
     You must have a $SONARR_USER to run this script
@@ -80,8 +80,8 @@ find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | gr
 mkdir -p $PKG/etc/rc.d
 sed -e "s/@SONARR_USER@/$SONARR_USER/g" $CWD/rc.$PRGNAM > $PKG/etc/rc.d/rc.$PRGNAM.new
 
-cp -a $CWD/package_info $PKG/opt/$PRGNAM/package_info
-echo "PackageVersion=$VERSION-$ARCH-$BUILD$TAG" >> $PKG/opt/$PRGNAM/package_info
+cp -a $CWD/package_info $PKG/usr/lib/$PRGNAM/package_info
+echo "PackageVersion=$VERSION-$ARCH-$BUILD$TAG" >> $PKG/usr/lib/$PRGNAM/package_info
 
 mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
 cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
