@@ -3,7 +3,7 @@
 PRGNAM=sonarr
 SONARR_USER=@SONARR_USER@
 DATA_DIR="/var/lib/$PRGNAM"
-BASE_DIR="/opt/$PRGNAM"
+BASE_DIR="/usr/lib/$PRGNAM"
 DAEMON="/usr/bin/mono --debug $BASE_DIR/${PRGNAM^}.exe"
 DAEMON_OPTS="-nobrowser -data=$DATA_DIR"
 PIDFILE=$DATA_DIR/$PRGNAM.pid
