@@ -39,7 +39,7 @@ set -e
 rm -rf $PKG
 mkdir -p $TMP $PKG $OUTPUT
 cd $TMP
-rm -rf UniFi.unix.zip
+rm -rf UniFi
 unzip $CWD/UniFi.unix.zip
 cd UniFi
 chown -R root:root .
@@ -67,7 +67,7 @@ sed -e 's/@UNIFI_USER@/${UNIFI_USER}/g' $CWD/rc.$PRGNAM > $PKG/etc/rc.d/rc.$PRGN
 
 mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
 cp readme.txt $PKG/usr/doc/$PRGNAM-$VERSION
-cp README $PKG/usr/doc/$PRGNAM-$VERSION/README.SLACKBUILD
+cp $CWD/README $PKG/usr/doc/$PRGNAM-$VERSION/README.SLACKBUILD
 cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
 
 mkdir -p $PKG/install

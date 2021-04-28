@@ -12,8 +12,7 @@ set -e
 
 is_running() {
     ps -p $(cat $PIDFILE 2>/dev/null) -o comm= >/dev/null 2>&1
-    RETVAL=$?
-    return $RETVAL
+    return $?
 }
 
 
@@ -58,6 +57,7 @@ case "$1" in
 	    echo "$PRGNAM is running."
 	else
 	    echo "$PRGNAM is not running."
+	    exit 1
 	fi
 	;;
     restart)
