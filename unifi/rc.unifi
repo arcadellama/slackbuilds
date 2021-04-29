@@ -7,41 +7,46 @@
 SERVICE_NAME="UniFi Controller"
 UNIFI_USER=@UNIFI_USER@
 SHELL="/bin/bash"
-PATH_TO_JAVA=/usr/bin/java
-PATH_TO_JAR=/usr/lib/unifi/lib/ace.jar
-PATH_TO_DATA=/var/lib/unifi
+JAVA=/usr/bin/java
+BIN_DIR=/usr/lib/unifi/lib/ace.jar
+JAR=$BIN_DIR/lib/ace.jar
+DATA_DIR=/var/lib/unifi
 MEM_LIMIT=1024M
-PID_FILE=/var/run/unifi/unifi.pid
+PID_FILE=$DATA_DIR/run/mongod.pid
 
 start() {
-  if [ ! -f $PID_FILE ]; then
-      if [ ! -d $(dirname ${PID_FILE}) ]; then
-	  mkdir -p $(dirname ${PID_FILE})
-	  chown $UNIFI_USER $(dirname ${PID_FILE})
-	  chmod 750 $(dirname ${PID_FILE})
-      fi
-    echo "Starting $SERVICE_NAME: "
-    cd $PATH_TO_DATA
-    su -l $UNIFI_USER -s $SHELL \
-	-c "$PATH_TO_JAVA -Xmx$MEM_LIMIT -jar $PATH_TO_JAR start &> /dev/null &"
-    echo $! > $PID_FILE
-  else
-    echo "$SERVICE_NAME is already running"
-    exit 1
-  fi
+    for i in {data,logs,run,work}; do
+	if [ ! -d $DATA_DIR/"$i" ]; then
+	    mkdir -p $DATA_DIR/"$i"
+	fi
+
+	if [ ! -L $BIN_DIR/"$i" ]; then
+	    ln -s $DATA_DIR/"$i" $BIN_DIR/"$i"
+	fi
+    done
+    chown -R @UNIFI_USER@ $DATA_DIR
+
+    if pgrep -l -F $PID_FILE 2>/dev/null | grep -q mongod; then
+	echo "$SERVICE_NAME is already running"
+	exit 1
+    else
+	echo "Starting $SERVICE_NAME: "
+	cd $DATA_DIR
+	su -l $UNIFI_USER -s $SHELL \
+	    -c "$JAVA -Xmx$MEM_LIMIT -jar $JAR_DIR start &> /dev/null &"
+    fi
 }
 
 stop() {
-  if [ -f $PID_FILE ]; then
-    echo -n "Stopping $SERVICE_NAME: "
-    cd $PATH_TO_DATA
-    su -l $UNIFI_USER -s $SHELL \ 
-	-c "$PATH_TO_JAVA -jar $PATH_TO_JAR stop &> /dev/null &"
-    rm $PID_FILE
-  else
-    echo "$SERVICE_NAME is not running"
-    exit 1
-  fi
+    if pgrep -l -F $PID_FILE 2>/dev/null | grep -q mongod; then
+	echo -n "Stopping $SERVICE_NAME: "
+	cd $DATA_DIR
+	su -l $UNIFI_USER -s $SHELL \
+	    -c "$JAVA -jar $JAR_DIR stop"
+    else
+	echo "$SERVICE_NAME is not running"
+	exit 1
+    fi
 }
 
 case $1 in
@@ -57,9 +62,8 @@ case $1 in
     start
   ;;
   status)
-    if [ -f $PID_FILE ]; then
-      PID=$(cat $PID_FILE);
-      echo "$SERVICE_NAME running as process $PID"
+    if pgrep -l -F $PID_FILE 2>/dev/null | grep -q mongod; then
+	echo "$SERVICE_NAME running as process $(cat $PID_FILE)"
     else
       echo "$SERVICE_NAME is not running"
     fi

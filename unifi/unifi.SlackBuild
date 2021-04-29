@@ -56,18 +56,13 @@ rm -rf $PKG/usr/lib/$PRGNAM/lib/native/{Mac,Windows}
 find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
   | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
 
-mkdir -p $PKG/var/lib/$PRGNAM/{data,logs,run,work}
-chown -R $UNIFI_USER $PKG/var/lib/$PRGNAM
-for i in {data,logs,run,work}; do
-    ln -s $PKG/var/lib/$PRGNAM/"$i" $PKG/usr/lib/$PRGNAM/"$i"
-done
-
 mkdir -p $PKG/etc/rc.d
-sed -e 's/@UNIFI_USER@/${UNIFI_USER}/g' $CWD/rc.$PRGNAM > $PKG/etc/rc.d/rc.$PRGNAM.new
+sed -e "s/@UNIFI_USER@/${UNIFI_USER}/g" $CWD/rc.$PRGNAM > $PKG/etc/rc.d/rc.$PRGNAM.new
+chmod 755 $PKG/etc/rc.d/rc.$PRGNAM.new
 
 mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
-cp readme.txt $PKG/usr/doc/$PRGNAM-$VERSION
-cp $CWD/README $PKG/usr/doc/$PRGNAM-$VERSION/README.SLACKBUILD
+cat readme.txt > $PKG/usr/doc/$PRGNAM-$VERSION/readme.txt
+cat $CWD/README > $PKG/usr/doc/$PRGNAM-$VERSION/README.SLACKBUILD
 cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
 
 mkdir -p $PKG/install
