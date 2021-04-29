@@ -4,14 +4,20 @@ grab, sort and rename them. It can also be configured to
 automatically upgrade the quality of files already downloaded when
 a better quality format becomes available.
 
-This is intended to be run as a nonprivileged user - by default, the
-build script uses "sonarr" as the user and /var/lib/sonarr as the
-default $HOME:
+You'll need to create a sonarr user in order to run with the provided init
+script:
 
-  # useradd -r -c "Sonarr User" -d /var/lib/sonarr -g sonarr sonarr
+# useradd -r -d /var/lib/sonarr sonarr
 
-If you wish to change the default user, e.g. to use the "plex" user,
-then run the script as follows:
+You'll also need to add the following to /etc/rc.d/rc.local
 
-  SONARR_USER=plex ./sonarr.SlackBuild
+if [ -x /etc/rc.d/rc.sonarr ]; then
+    /etc/rc.d/rc./sonarr start
+fi
+
+And the following to /etc/rc.d/rc.local_shutdown
+
+if [ -x /etc/rc.d/rc.sonarr ]; then
+    /etc/rc.d/rc./sonarr stop
+fi
 

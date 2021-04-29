@@ -50,7 +50,7 @@ if getent passwd $SONARR_USER 1>dev/null 2>dev/null; then
 
     You must have a $SONARR_USER to run this script
 
-    # useradd -r -d /var/lib/$PRGNAM -g $SONARR_USER $SONARR_USER
+    # useradd -r -d /var/lib/$PRGNAM $SONARR_USER
 
 EOF
   exit 1
@@ -74,11 +74,11 @@ rm -rf $PWD/${PRGNAM^}.Update
 mkdir -p $PKG/usr/lib/$PRGNAM/
 cp -a $PWD/* $PKG/usr/lib/$PRGNAM
 
-find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
-  | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
-
 mkdir -p $PKG/etc/rc.d
 sed -e "s/@SONARR_USER@/$SONARR_USER/g" $CWD/rc.$PRGNAM > $PKG/etc/rc.d/rc.$PRGNAM.new
+
+find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
+  | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
 
 cp -a $CWD/package_info $PKG/usr/lib/$PRGNAM/package_info
 echo "PackageVersion=$VERSION-$ARCH-$BUILD$TAG" >> $PKG/usr/lib/$PRGNAM/package_info
