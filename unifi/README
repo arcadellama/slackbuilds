@@ -1,13 +1,20 @@
 UniFi Network Controller is a centralized management system
 for Ubiquiti UniFi products.
 
-This is intended to be run as a nonprivileged user - by default, the
-build script uses "unifi" as the user and /var/lib/unifi as the
-default $HOME:
+You'll need to create a unifi user in order to run with the provided init
+script:
 
-  # useradd -r -c "UniFi User" -d /var/lib/unifi unifi
+# useradd -r -d /var/lib/unifi mono
 
-If you wish to change the default run the script as follows:
+You'll also need to add the following to /etc/rc.d/rc.local
 
-  UNIFI_USER=nobody ./unifi.SlackBuild
+if [ -x /etc/rc.d/rc.unifi ]; then
+    /etc/rc.d/rc./unifi start
+fi
+
+And the following to /etc/rc.d/rc.local_shutdown
+
+if [ -x /etc/rc.d/rc.unifi ]; then
+    /etc/rc.d/rc./unifi stop
+fi
 

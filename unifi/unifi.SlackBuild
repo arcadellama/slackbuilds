@@ -36,6 +36,18 @@ OUTPUT=${OUTPUT:-/tmp}
 
 set -e
 
+# Bail if user isn't valid on your system
+if ! getent passwd $UNIFI_USER 1>/dev/null 2>/dev/null; then
+cat << EOF
+
+  You must have a unifi user to run this script:
+
+  # useradd -d /var/lib/$PRGNAM $UNIFI_USER
+
+EOF
+    exit 1
+fi
+
 rm -rf $PKG
 mkdir -p $TMP $PKG $OUTPUT
 cd $TMP
