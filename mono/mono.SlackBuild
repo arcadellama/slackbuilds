@@ -64,7 +64,8 @@ CXXFLAGS="$SLKCFLAGS" \
   --mandir=/usr/man \
   --libdir=/usr/lib${LIBDIRSUFFIX} \
   --docdir=/usr/doc/$PRGNAM-$VERSION \
-  --build=$ARCH-slackware-linux
+  --build=$ARCH-slackware-linux \
+  --enable-minimal=aot
 
 make
 make install DESTDIR=$PKG
