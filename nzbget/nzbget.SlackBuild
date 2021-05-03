@@ -104,7 +104,7 @@ find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | gr
   | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
 
 mkdir -p $PKG/var/lib/$PRGNAM
-sed -e "s|MainDir=.*|MainDir=/var/lib/nzbget|g" -e "s|CertStore=.*|CertStore=/etc/ssl/ca-certificates.crt|g" $PKG/etc/$PRGNAM.conf > $PKG/var/lib/$PRGNAM/$PRGNAM.conf.new
+sed -e "s|MainDir=.*|MainDir=/var/lib/nzbget|g" -e "s|CertStore=.*|CertStore=/etc/ssl/ca-certificates.crt|g" -e "s|DaemonUsername=.*|DaemonUsername=${NZBGET_USER}|g" "s|UMask=.*|UMask=0002|g" $PKG/etc/$PRGNAM.conf > $PKG/var/lib/$PRGNAM/$PRGNAM.conf.new
 mv $PKG/etc/$PRGNAM.conf $PKG/etc/$PRGNAM.conf.new
 
 mkdir -p $PKG/etc/rc.d
