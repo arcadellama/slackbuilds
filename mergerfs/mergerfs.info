@@ -1,5 +1,5 @@
 PRGNAM="mergerfs"
-VERSION="2.32.3"
+VERSION="2.32.4"
 HOMEPAGE="https://github.com/trapexit/mergerfs"
 DOWNLOAD="https://github.com/trapexit/mergerfs/releases/download/2.32.4/mergerfs-2.32.4.tar.gz"
 MD5SUM="7a3bf9fb25d896b73b2d8f31d84d0015"
