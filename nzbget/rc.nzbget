@@ -15,7 +15,7 @@ start() {
     fi
     chown -R $NZBGET_USER $DATA_DIR
 
-    if pgrep -l -F $PIDFILE 2>/dev/null | grep -q nzbget; then
+    if pgrep -l -F $PIDFILE 2>/dev/null | grep -q $PRGNAM; then
 	echo "$PRGNAM appears to already be running."
 	    exit 1
 	else 
@@ -28,7 +28,7 @@ start() {
 }
 
 stop() {
-    if pgrep -l -F $PIDFILE 2>/dev/null | grep -q nzbget; then
+    if pgrep -l -F $PIDFILE 2>/dev/null | grep -q $PRGNAM; then
 	echo "Stopping $PRGNAM..."
 	su - $NZBGET_USER -c \
 	    "$DAEMON -Q"
@@ -46,7 +46,7 @@ case "$1" in
 	stop
 	;;
     status)
-	if pgrep -l -F $PIDFILE 2>/dev/null | grep -q nzbget; then
+	if pgrep -l -F $PIDFILE 2>/dev/null | grep -q $PRGNAM; then
 	    echo "$PRGNAM running as process $(cat $PIDFILE)"
 	else
 	    echo "$PRGNAM is not running"
