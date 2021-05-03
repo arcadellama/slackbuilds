@@ -2,13 +2,19 @@ NZBGet is a binary downloader, which downloads files from Usenet
 based on information given in nzb-files. NZBGet is written in C++
 and is known for its extraordinary performance and efficiency.
 
-There is a default configuration template located at
-/usr/share/nzbget/nzbget.conf. By default, NZBGet looks for this in:
+You'll need to create a nzbget user in order to run with the provided init
+script:
 
-  * <app-directory>/nzbget.conf
-  * ~/.nzbget
-  * /etc/nzbget.conf
-  * /usr/etc/nzbget.conf
-  * /usr/local/etc/nzbget.conf
-  * /opt/etc/nzbget.conf
+# useradd -r -d /var/lib/nzbget nzbget
 
+You'll also need to add the following to /etc/rc.d/rc.local
+
+if [ -x /etc/rc.d/rc.nzbget ]; then
+    /etc/rc.d/rc./nzbget start
+fi
+
+And the following to /etc/rc.d/rc.local_shutdown
+
+if [ -x /etc/rc.d/rc.nzbget ]; then
+    /etc/rc.d/rc./nzbget stop
+fi

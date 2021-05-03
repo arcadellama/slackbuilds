@@ -35,6 +35,8 @@ if [ -z "$ARCH" ]; then
   esac
 fi
 
+NZBGET_USER=${NZBGET_USER:-nzbget}
+
 CWD=$(pwd)
 TMP=${TMP:-/tmp/SBo}
 PKG=$TMP/package-$PRGNAM
@@ -55,6 +57,18 @@ else
 fi
 
 set -e
+
+# Bail if user isn't valid on the system
+if getent passwd $NZBGET_USER 1>dev/null 2>dev/null; then
+    cat << EOF
+
+    You must have a $SONARR_USER to run this script
+
+    # useradd -r -d /var/lib/$PRGNAM $NZBGET_USER
+
+EOF
+  exit 1
+fi
 
 rm -rf $PKG
 mkdir -p $TMP $PKG $OUTPUT
