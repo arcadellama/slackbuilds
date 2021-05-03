@@ -4,7 +4,7 @@ PRGNAM=nzbget
 NZBGET_USER=@NZBGET_USER@
 DATA_DIR="/var/lib/$PRGNAM"
 DAEMON="/usr/bin/$PGRNAM"
-DAEMON_OPTS="-o MainDir=$DATA_DIR -o LockFile=$DATA_DIR/$PRGNAM.lock"
+DAEMON_OPTS="-o LockFile=$DATA_DIR/$PRGNAM.lock"
 PIDFILE=$DATA_DIR/$PRGNAM.lock
 
 set -e
