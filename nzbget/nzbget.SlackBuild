@@ -103,8 +103,9 @@ make DESTDIR=$PKG install-conf
 find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
   | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
 
-mkdr -p $PKG/var/lib/$PRGNAM
+mkdir -p $PKG/var/lib/$PRGNAM
 cat $PKG/etc/$PRGNAM.conf > $PKG/var/lib/$PRGNAM/$PRGNAM.conf.new
+mv $PKG/etc/$PRGNAM.conf $PKG/etc/$PRGNAM.conf.new
 
 mkdir -p $PKG/etc/rc.d
 sed -e "s/@NZBGET_USER@/nzbget/g"  $CWD/rc.$PRGNAM > $PKG/etc/rc.d/rc.$PRGNAM.new
