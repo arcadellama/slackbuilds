@@ -38,6 +38,16 @@ stop() {
     fi
 }
 
+restart() {
+    if pgrep -l -F $PIDFILE 2>/dev/null | grep -q $PRGNAM; then
+	su - $NZBGET_USER -c \
+	    "$DAEMON -O"
+    else
+	echo "$PRGNAM does not appear to be running."
+	exit 1
+    fi
+}
+
 case "$1" in
     start)
 	start
@@ -53,9 +63,7 @@ case "$1" in
 	fi
 	;;
     restart)
-	stop
-	sleep 3
-	start
+	restart
 	;;
     *)
 	echo "Usage start|stop|restart|status"
