@@ -3,23 +3,20 @@
 PRGNAM=nzbget
 NZBGET_USER=@NZBGET_USER@
 DATA_DIR="/var/lib/$PRGNAM"
-DAEMON="/usr/bin/$PGRNAM"
-DAEMON_OPTS="-o LockFile=$DATA_DIR/$PRGNAM.lock"
+DAEMON="/usr/bin/nzbget"
+DAEMON_OPTS="--configfile=$DATA_DIR/$PRGNAM.conf -o LockFile=$DATA_DIR/$PRGNAM.lock"
 PIDFILE=$DATA_DIR/$PRGNAM.lock
 
 set -e
 
 start() {
-    if [ ! -d $DATA_DIR ]; then
-	mkdir -p $DATA_DIR
-    fi
-    chown -R $NZBGET_USER $DATA_DIR
 
     if pgrep -l -F $PIDFILE 2>/dev/null | grep -q $PRGNAM; then
 	echo "$PRGNAM appears to already be running."
 	    exit 1
 	else 
 	    echo "Starting $PRGNAM."
+	    chown -R $NZBGET_USER:$NZBGET_USER $DATA_DIR
 	    cd $DATA_DIR
 	    su - $NZBGET_USER -c \
 		"$DAEMON $DAEMON_OPTS -D"
@@ -28,10 +25,10 @@ start() {
 }
 
 stop() {
+
     if pgrep -l -F $PIDFILE 2>/dev/null | grep -q $PRGNAM; then
-	echo "Stopping $PRGNAM..."
 	su - $NZBGET_USER -c \
-	    "$DAEMON -Q"
+	    "$DAEMON $DAEMON_OPTS -Q"
     else
 	echo "$PRGNAM does not appear to be running."
 	exit 1
@@ -39,9 +36,10 @@ stop() {
 }
 
 restart() {
+
     if pgrep -l -F $PIDFILE 2>/dev/null | grep -q $PRGNAM; then
 	su - $NZBGET_USER -c \
-	    "$DAEMON -O"
+	    "$DAEMON $DAEMON_OPTS -O"
     else
 	echo "$PRGNAM does not appear to be running."
 	exit 1

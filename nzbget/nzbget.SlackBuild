@@ -62,7 +62,7 @@ set -e
 if getent passwd $NZBGET_USER 1>dev/null 2>dev/null; then
     cat << EOF
 
-    You must have a $SONARR_USER to run this script
+    You must have a $NZBGET_USER to run this script
 
     # useradd -r -d /var/lib/$PRGNAM $NZBGET_USER
 
@@ -87,20 +87,27 @@ CFLAGS="$SLKCFLAGS" \
 CXXFLAGS="$SLKCFLAGS" \
 ./configure \
   --prefix=/usr \
+  --sbindir='/usr/bin/' \
   --sysconfdir=/etc \
   --localstatedir=/var \
   --mandir=/usr/man \
   --docdir=/usr/doc/$PRGNAM-$VERSION \
+  --enable-parcheck \
+  --with-tlslib=OpenSSL \
   --build=$ARCH-slackware-linux
 
 make
-make install DESTDIR=$PKG
+make DESTDIR=$PKG install
+make DESTDIR=$PKG install-conf
 
 find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
   | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
 
+mkdr -p $PKG/var/lib/$PRGNAM
+cat $PKG/etc/$PRGNAM.conf > $PKG/var/lib/$PRGNAM/$PRGNAM.conf.new
+
 mkdir -p $PKG/etc/rc.d
-cat $CWD/rc.$PRGNAM > $PKG/etc/rc.d/rc.$PRGNAM.new
+sed -e "s/@NZBGET_USER@/nzbget/g"  $CWD/rc.$PRGNAM > $PKG/etc/rc.d/rc.$PRGNAM.new
 
 mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
 cp -a \
