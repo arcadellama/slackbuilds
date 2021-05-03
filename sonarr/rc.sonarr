@@ -16,20 +16,20 @@ start() {
     fi
     chown -R $SONARR_USER $DATA_DIR
 
-    if pgrep -l -F $PIDFILE 2>/dev/null | grep -q mono; then
+    if pgrep -a -F $PIDFILE 2>/dev/null | grep -q $PRGNAM; then
 	echo "$PRGNAM appears to already be running."
 	    exit 1
 	else 
 	    echo "Starting $PRGNAM."
 	    cd $DATA_DIR
 	    su - $SONARR_USER -s /bin/bash -c \
-		"$DAEMON $DAEMON_OPTS &> /dev/null &"
+		"exec -a $PRGNAM $DAEMON $DAEMON_OPTS &> /dev/null &"
     fi
 
 }
 
 stop() {
-    if pgrep -l -F $PIDFILE 2>/dev/null | grep -q mono; then
+    if pgrep -a -F $PIDFILE 2>/dev/null | grep -q $PRGNAM; then
 	echo "Stopping $PRGNAM..."
 	pkill -F $PIDFILE 2> /dev/null
     else
@@ -46,7 +46,7 @@ case "$1" in
 	stop
 	;;
     status)
-	if pgrep -l -F $PIDFILE 2>/dev/null | grep -q mono; then
+	if pgrep -a -F $PIDFILE 2>/dev/null | grep -q $PRGNAM; then
 	    echo "$PRGNAM running as process $(cat $PIDFILE)"
 	else
 	    echo "$PRGNAM is not running"
