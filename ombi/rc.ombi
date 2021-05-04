@@ -7,29 +7,57 @@ DATA_DIR="/var/lib/$PRGNAM"
 BASE_DIR="/usr/lib/$PRGNAM"
 DAEMON="$BASE_DIR/Ombi"
 DAEMON_OPTS="--storage $DATA_DIR --host http://*:5000"
+PIDFILE=$DATA_DIR/$PRGNAM.pid
 
 set -e
 
+running() {
+    return $(ps -ef | grep 'Ombi' | grep -v grep | wc -l)
+}
+
 start() {
 
-    if pgrep $PRGNAM >/dev/null; then
-	echo "$PRGNAM appears to already be running ($(pgrep $PRGNAM))."
+    if [ running != 0 ]; then
+	echo "$PRGNAM appears to already be running."
+	exit 1
+    else
+	if [ -e $PIDFILE ]
+	    echo "There appears to be a stale pidfile at $PIDFILE."
 	    exit 1
-	else 
-	    echo "Starting $PRGNAM."
-	    chown -R $OMBI_USER:$OMBI_GROUP $DATA_DIR
-	    su -m $OMBI_USER -s /bin/sh  \
-		-c "exec -a $PRGNAM $DAEMON $DAEMON_OPTS &" \
-		>/dev/null 2>&1
+	fi
+    fi
+
+    echo "Starting $PRGNAM."
+    rm -f $PIDFILE
+    chown -R $OMBI_USER:$OMBI_GROUP $DATA_DIR
+    su -m $OMBI_USER -s /bin/sh  \
+	-c "exec $DAEMON $DAEMON_OPTS &" >/dev/null 2>&1
+    sleep 3
+
+    if [ running != 0 ]; then
+	echo "Success."
+	ps -ef | grep 'Ombi' | grep -v grep | awk '{print $2}' > $PIDFILE
+	exit 0
+    else
+	echo "Error: Cannot start $PRGNAM."
+	exit 1
     fi
 
 }
 
 stop() {
 
-    if pgrep $PRGNAM >/dev/null; then
+    if [ running != 0 ]; then
 	echo "Stopping $PRGNAM."
-	pkill $PRGNAM
+	kill -15 $(cat $PIDFILE)
+	if [ $? != 0 ]
+	    rm -f $PIDFILE
+	    echo "Done."
+	    exit 0
+	else
+	    echo "Could not successfuly stop $PRGNAM."
+	    exit 1
+	fi
     else
 	echo "$PRGNAM does not appear to be running."
 	exit 1
@@ -44,11 +72,10 @@ case "$1" in
 	stop
 	;;
     status)
-	if pgrep $PRGNAM >/dev/null; then
-	    echo "$PRGNAM is running as process $(pgrep $PRGNAM)"
+	if [ running != 0 ]; then
+	    echo "$PRGNAM is running as process $(cat $PIDFILE)."
 	else
-	    echo "$PRGNAM does not appear to be running."
-	    exit 1
+	    echo "$PRGNAM is not running."
 	fi
 	;;
     restart)
