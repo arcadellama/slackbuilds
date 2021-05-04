@@ -4,37 +4,32 @@ PRGNAM=ombi
 OMBI_USER=@OMBI_USER@
 DATA_DIR="/var/lib/$PRGNAM"
 BASE_DIR="/usr/lib/$PRGNAM"
-DAEMON="/usr/lib/ombi/bin/Ombi"
-DAEMON_OPTS="--storage $DATA_DIR --host http://*:5000"
-PIDFILE=$DATA_DIR/$PRGNAM.pid
+DAEMON="/usr/bin/daemon"
+DAEMON_OPTS="-u $OMBI_USER:$OMBI_USER -n $PRGNAM -D $DATA_DIR"
+EXEC="$BASE_DIR/Ombi --storage $DATA_DIR --host http://*:5000"
 
 set -e
 
 start() {
 
-    if pgrep -l -F $PIDFILE 2>/dev/null | grep -q Ombi; then
+    if $DAEMON $DAEMON_OPTS --running; then
 	echo "$PRGNAM appears to already be running."
 	    exit 1
 	else 
 	    echo "Starting $PRGNAM."
-	    if [ ! -d $DATA_DIR ]; then
-		mkdir -p $DATA_DIR
-	    fi
-	    chown -R $OMBI_USER $DATA_DIR
-	    cd $DATA_DIR
-	    su - $OMBI_USER -s /bin/bash -c \
-		"$DAEMON $DAEMON_OPTS &> /dev/null &"
+	    chown -R $OMBI_USER:$OMBI_USER $DATA_DIR
+	    $DAEMON $DAEMON_OPTS --respawn --command="${EXEC}"
     fi
 
 }
 
 stop() {
-    if pgrep -l -F $PIDFILE 2>/dev/null | grep -q Ombi; then
-	echo "Stopping $PRGNAM..."
-	pkill -F $PIDFILE 2> /dev/null
+
+    if $DAEMON $DAEMON_OPTS --running; then
+	echo "Stopping $PRGNAM."
+	$DAEMON $DAEMON_OPTS --stop
     else
 	echo "$PRGNAM does not appear to be running."
-	exit 1
     fi
 }
 
@@ -46,16 +41,11 @@ case "$1" in
 	stop
 	;;
     status)
-	if pgrep -l -F $PIDFILE 2>/dev/null | grep -q Ombi; then
-	    echo "$PRGNAM running as process $(cat $PIDFILE)"
-	else
-	    echo "$PRGNAM is not running"
-	fi
+	$DAEMON $DAEMON_OPTS --running --verbose
 	;;
     restart)
-	stop
-	sleep 3
-	start
+	echo "Restarting $PRGNAM"
+	$DAEMON $DAEMON_OPTS --restart --verbose
 	;;
     *)
 	echo "Usage start|stop|restart|status"

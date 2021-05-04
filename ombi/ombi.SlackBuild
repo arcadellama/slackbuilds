@@ -66,11 +66,13 @@ mkdir -p $PKG/usr/lib/$PRGNAM
 cp -a * $PKG/usr/lib/$PRGNAM
 chmod 755 $PKG/usr/lib/$PRGNAM/${PRGNAM^}
 
+mkdir -p $PKG/var/lib/$PRGNAM
+cp -a appsettings.json $PKG/var/lib/$PRGNAM/appsettings.json.new
+cp -a ClientApp $PKG/var/lib/$PRGNAM
+
 #find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
 #  | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
 
-mkdir -p $PKG/var/lib/$PRGNAM
-cp -a appsettings.json $PKG/var/lib/$PRGNAM/appsettings.json.new
 
 mkdir -p $PKG/etc/rc.d
 sed -e "s/@OMBI_USER@/${OMBI_USER}/g" $CWD/rc.ombi > $PKG/etc/rc.d/rc.ombi.new
