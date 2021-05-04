@@ -2,34 +2,37 @@
 
 PRGNAM=ombi
 OMBI_USER=@OMBI_USER@
+OMBI_USER=@OMBI_GROUP@
 DATA_DIR="/var/lib/$PRGNAM"
 BASE_DIR="/usr/lib/$PRGNAM"
-DAEMON="/usr/bin/daemon"
-DAEMON_OPTS="-u $OMBI_USER:$OMBI_USER -n $PRGNAM -D $DATA_DIR"
-EXEC="$BASE_DIR/Ombi --storage $DATA_DIR --host http://*:5000"
+DAEMON="$BASE_DIR/Ombi"
+DAEMON_OPTS="--storage $DATA_DIR --host http://*:5000"
 
 set -e
 
 start() {
 
-    if $DAEMON $DAEMON_OPTS --running; then
-	echo "$PRGNAM appears to already be running."
+    if pgrep $PRGNAM >/dev/null; then
+	echo "$PRGNAM appears to already be running ($(pgrep $PRGNAM))."
 	    exit 1
 	else 
 	    echo "Starting $PRGNAM."
-	    chown -R $OMBI_USER:$OMBI_USER $DATA_DIR
-	    $DAEMON $DAEMON_OPTS --respawn --command="${EXEC}"
+	    chown -R $OMBI_USER:$OMBI_GROUP $DATA_DIR
+	    su -m $OMBI_USER -s /bin/sh  \
+		-c "exec -a $PRGNAM $DAEMON $DAEMON_OPTS &" \
+		>/dev/null 2>&1
     fi
 
 }
 
 stop() {
 
-    if $DAEMON $DAEMON_OPTS --running; then
+    if pgrep $PRGNAM >/dev/null; then
 	echo "Stopping $PRGNAM."
-	$DAEMON $DAEMON_OPTS --stop
+	pkill $PRGNAM
     else
 	echo "$PRGNAM does not appear to be running."
+	exit 1
     fi
 }
 
@@ -41,11 +44,17 @@ case "$1" in
 	stop
 	;;
     status)
-	$DAEMON $DAEMON_OPTS --running --verbose
+	if pgrep $PRGNAM >/dev/null; then
+	    echo "$PRGNAM is running as process $(pgrep $PRGNAM)"
+	else
+	    echo "$PRGNAM does not appear to be running."
+	    exit 1
+	fi
 	;;
     restart)
-	echo "Restarting $PRGNAM"
-	$DAEMON $DAEMON_OPTS --restart --verbose
+	stop
+	sleep 3
+	start
 	;;
     *)
 	echo "Usage start|stop|restart|status"

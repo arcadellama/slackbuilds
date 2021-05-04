@@ -28,6 +28,7 @@ BUILD=${BUILD:-1}
 TAG=${TAG:-_SBo}
 
 OMBI_USER=${OMBI_USER:-ombi}
+OMBI_GROUP=${OMBI_GROUOP:-ombi}
 
 CWD=$(pwd)
 TMP=${TMP:-/tmp/SBo}
@@ -36,13 +37,23 @@ OUTPUT=${OUTPUT:-/tmp}
 
 set -e
 
-# Bail if user isn't valid on the system
-if getent passwd $OMBI_USER 1>dev/null 2>dev/null; then
-    cat << EOF
+# Bail if user or group isn't valid on your system
+if ! getent passwd $OMBI_USER 1>/dev/null 2>/dev/null; then
+  cat << EOF
 
-    You must have a $OMBI_USER to run this script
+  You must have a ombi user to run this script
 
-    # useradd -r -d /var/lib/$PRGNAM $OMBI_USER
+  # groupadd $OMBI_GROUP
+  # useradd -r -d /var/lib/$PRGNAM -s /bin/false -g $OMBI_GROUP $OMBI_USER
+
+EOF
+
+  exit 1
+elif ! getent group $OMBI_GROUP 1>/dev/null 2>/dev/null; then
+  cat << EOF
+
+  You must have a ombi group to run this script
+  # groupadd $OMBI_GROUP
 
 EOF
   exit 1
@@ -53,8 +64,8 @@ mkdir -p $TMP $PKG $OUTPUT
 cd $TMP
 rm -rf $PRGNAM-$VERSION
 mkdir -p $PRGNAM-$VERSION
+tar xvf $CWD/linux-x64.tar.gz -C $PRGNAM-$VERSION
 cd $PRGNAM-$VERSION
-tar xvf $CWD/linux-x64.tar.gz
 chown -R root:root .
 find -L . \
  \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
@@ -69,13 +80,16 @@ chmod 755 $PKG/usr/lib/$PRGNAM/${PRGNAM^}
 mkdir -p $PKG/var/lib/$PRGNAM
 cp -a appsettings.json $PKG/var/lib/$PRGNAM/appsettings.json.new
 cp -a ClientApp $PKG/var/lib/$PRGNAM
+chown -R $OMBI_USER:$OMBI_GROUP $PKG/var/lib/$PRGNAM
 
-#find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
-#  | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
+find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
+  | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
 
 
 mkdir -p $PKG/etc/rc.d
-sed -e "s/@OMBI_USER@/${OMBI_USER}/g" $CWD/rc.ombi > $PKG/etc/rc.d/rc.ombi.new
+sed -e "s/@OMBI_USER@/${OMBI_USER}/g" \
+    -e "s/@OMBI_GROUP@/${OMBI_GROUP}/g" \
+    $CWD/rc.ombi > $PKG/etc/rc.d/rc.ombi.new
 
 mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
 cp -a $CWD/README $PKG/usr/doc/$PRGNAM-$VERSION/README
