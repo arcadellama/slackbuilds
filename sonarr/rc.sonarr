@@ -11,16 +11,16 @@ PIDFILE=$DATA_DIR/$PRGNAM.pid
 set -e
 
 start() {
-    if [ ! -d $DATA_DIR ]; then
-	mkdir -p $DATA_DIR
-    fi
-    chown -R $SONARR_USER $DATA_DIR
 
     if pgrep -a -F $PIDFILE 2>/dev/null | grep -q $PRGNAM; then
 	echo "$PRGNAM appears to already be running."
 	    exit 1
 	else 
 	    echo "Starting $PRGNAM."
+	    if [ ! -d $DATA_DIR ]; then
+		mkdir -p $DATA_DIR
+	    fi
+	    chown -R $SONARR_USER $DATA_DIR
 	    cd $DATA_DIR
 	    su - $SONARR_USER -s /bin/bash -c \
 		"exec -a $PRGNAM $DAEMON $DAEMON_OPTS &> /dev/null &"
