@@ -36,6 +36,7 @@ if [ -z "$ARCH" ]; then
 fi
 
 NZBGET_USER=${NZBGET_USER:-nzbget}
+NZBGET_GROUP=${NZBGET_GROUP:-nzbget}
 
 CWD=$(pwd)
 TMP=${TMP:-/tmp/SBo}
@@ -58,13 +59,23 @@ fi
 
 set -e
 
-# Bail if user isn't valid on the system
-if getent passwd $NZBGET_USER 1>dev/null 2>dev/null; then
-    cat << EOF
+# Bail if user or group isn't valid on your system
+if ! getent passwd $NZBGET_USER 1>/dev/null 2>/dev/null; then
+  cat << EOF
 
-    You must have a $NZBGET_USER to run this script
+  You must have a $NZBGET_USER to run this script
 
-    # useradd -r -d /var/lib/$PRGNAM $NZBGET_USER
+  # groupadd $NZBGET_GROUP
+  # useradd -u $NZBGET_USER -d /var/lib/$PRGNAM -g $NZBGET_GROUP $NZBGET_USER
+
+EOF
+  exit 1
+
+elif ! getent group $NZBGET_GROUP 1>/dev/null 2>/dev/null; then
+  cat << EOF
+
+  You must have a $NZBGET_GROUP group to run this script
+  # groupadd -g $NZBGET_GROUP plex
 
 EOF
   exit 1
@@ -108,7 +119,7 @@ sed -e "s|MainDir=.*|MainDir=/var/lib/nzbget|g" -e "s|CertStore=.*|CertStore=/et
 mv $PKG/etc/$PRGNAM.conf $PKG/etc/$PRGNAM.conf.new
 
 mkdir -p $PKG/etc/rc.d
-sed -e "s/@NZBGET_USER@/${NZBGET_USER}/g" $CWD/rc.$PRGNAM > $PKG/etc/rc.d/rc.$PRGNAM.new
+sed -e "s/@NZBGET_USER@/${NZBGET_USER}/g" -e "s/@NZBGET_GROUP@/${NZBGET_GROUP}/g" $CWD/rc.$PRGNAM > $PKG/etc/rc.d/rc.$PRGNAM.new
 
 mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
 cp -a \

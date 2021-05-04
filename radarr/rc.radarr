@@ -1,7 +1,8 @@
-#!/bin/bash
+#!/bin/sh
 
 PRGNAM=radarr
 RADARR_USER=@RADARR_USER@
+RADARR_GROUP=@RADARR_GROUP@
 DATA_DIR="/var/lib/$PRGNAM"
 BASE_DIR="/usr/lib/$PRGNAM"
 DAEMON="/usr/lib/radarr/bin/Radarr"
@@ -19,11 +20,15 @@ start() {
 	    echo "Starting $PRGNAM."
 	    if [ ! -d $DATA_DIR ]; then
 		mkdir -p $DATA_DIR
+		if [ $? -eq 1]; then
+		    echo "ERROR: Could not create $DATA_DIR. System error code $?"
+		    exit 1
+		fi
 	    fi
-	    chown -R $RADARR_USER $DATA_DIR
+	    chown -R $RADARR_USER:$RADARR_GROUP $DATA_DIR
 	    cd $DATA_DIR
-	    su - $RADARR_USER -s /bin/bash -c \
-		"$DAEMON $DAEMON_OPTS &> /dev/null &"
+	    su -m $RADARR_USER -s /bin/bash -c \
+		"exec $DAEMON $DAEMON_OPTS &" >/dev/null 2>&1
     fi
 
 }

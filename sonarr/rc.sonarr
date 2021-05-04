@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 PRGNAM=sonarr
 SONARR_USER=@SONARR_USER@
@@ -22,8 +22,8 @@ start() {
 	    fi
 	    chown -R $SONARR_USER $DATA_DIR
 	    cd $DATA_DIR
-	    su - $SONARR_USER -s /bin/bash -c \
-		"exec -a $PRGNAM $DAEMON $DAEMON_OPTS &> /dev/null &"
+	    su -m $SONARR_USER -s /bin/bash -c \
+		"exec -a $PRGNAM $DAEMON $DAEMON_OPTS &" >/dev/null 2>&1
     fi
 
 }
