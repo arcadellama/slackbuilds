@@ -6,7 +6,7 @@ OMBI_USER=ombi
 DATA_DIR="/var/lib/$PRGNAM"
 DAEMON="/usr/lib/ombi/Ombi"
 DAEMON_OPTS="--storage $DATA_DIR --host http://*:5000"
-PIDFILE=$DATA_DIR/$PRGNAM.pid
+PIDFILE=/var/run/$PRGNAM.pid
 
 set -e
 
@@ -27,7 +27,10 @@ start() {
     fi
 
     if [ ! -d $DATA_DIR ]; then
-	mkdir -p $DATA_DIR && cp -a /usr/lib/ombi/ClientApp $DATA_DIR
+	mkdir -p $DATA_DIR && \
+		cp -a /usr/lib/ombi/{ClientApp,wwwroot,appsettings.json} \
+		$DATA_DIR
+
 	if [ $? -ne 0 ]; then
 	    echo "Error. Could not initialize $DATA_DIR."
 	    exit 1
@@ -35,9 +38,7 @@ start() {
     fi
 
     echo "Starting $PRGNAM."
-
     rm -f $PIDFILE
-    
     chown -R $OMBI_USER:$OMBI_GROUP $DATA_DIR
 
     if [ $? -ne 0 ]; then
