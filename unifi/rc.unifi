@@ -6,6 +6,7 @@
 
 SERVICE_NAME="UniFi Controller"
 UNIFI_USER=@UNIFI_USER@
+UNIFI_GROUP=@UNIFI_GROUP@
 SHELL=/bin/bash
 JAVA=/usr/bin/java
 BIN_DIR=/usr/lib/unifi
@@ -24,7 +25,7 @@ start() {
 	    ln -s $DATA_DIR/"$i" $BIN_DIR/"$i"
 	fi
     done
-    chown -R $UNIFI_USER $DATA_DIR
+    chown -R $UNIFI_USER:$UNIFI_GROUP $DATA_DIR
 
     if pgrep -l -F $PID_FILE 2>/dev/null | grep -q mongod; then
 	echo "$SERVICE_NAME is already running"
@@ -34,6 +35,14 @@ start() {
 	cd $DATA_DIR
 	su -l $UNIFI_USER -s $SHELL \
 	    -c "$JAVA -Xmx$MEM_LIMIT -jar $JAR start &> /dev/null &"
+	sleep 3
+	if pgrep -l -F $PID_FILE 2>/dev/null | grep -q mongod; then
+		echo "Success."
+		exit 0
+	else
+		echo "Error."
+		exit 1
+	fi
     fi
 }
 
@@ -43,6 +52,12 @@ stop() {
 	cd $DATA_DIR
 	su -l $UNIFI_USER -s $SHELL \
 	    -c "$JAVA -jar $JAR stop"
+	if [ $? -eq 0 ]; then
+		echo "Success."
+		exit 0
+	else
+		echo "Error."
+		exit 1
     else
 	echo "$SERVICE_NAME is not running"
 	exit 1

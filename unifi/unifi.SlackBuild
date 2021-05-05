@@ -28,6 +28,7 @@ BUILD=${BUILD:-1}
 TAG=${TAG:-_SBo}
 
 UNIFI_USER=${UNIFI_USER:-unifi}
+UNIFI_GROUP=${UNIFI_GROUP:-unifi}
 
 CWD=$(pwd)
 TMP=${TMP:-/tmp/SBo}
