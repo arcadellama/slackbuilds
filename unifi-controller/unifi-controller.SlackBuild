@@ -37,16 +37,26 @@ OUTPUT=${OUTPUT:-/tmp}
 
 set -e
 
-# Bail if user isn't valid on your system
+# Bail if user or group isn't valid on your system
 if ! getent passwd $UNIFI_USER 1>/dev/null 2>/dev/null; then
-cat << EOF
+  cat << EOF
 
-  You must have a unifi user to run this script:
+  You must have a ombi user to run this script
 
-  # useradd -d /var/lib/$PRGNAM $UNIFI_USER
+  # groupadd $UNIFI_GROUP
+  # useradd -r -d /var/lib/$PRGNAM -g $UNIFI_GROUP $UNIFI_USER
 
 EOF
-    exit 1
+
+  exit 1
+elif ! getent group $UNIFI_GROUP 1>/dev/null 2>/dev/null; then
+  cat << EOF
+
+  You must have a ombi group to run this script
+  # groupadd $UNIFI_GROUP
+
+EOF
+  exit 1
 fi
 
 rm -rf $PKG
@@ -70,7 +80,9 @@ find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | gr
   | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
 
 mkdir -p $PKG/etc/rc.d
-sed -e "s/@UNIFI_USER@/${UNIFI_USER}/g" $CWD/rc.$PRGNAM > $PKG/etc/rc.d/rc.$PRGNAM.new
+sed -e "s/@UNIFI_USER@/${UNIFI_USER}/g" \
+	-e "s/@UNIFI_GROUP@/${UNIFI_GROUP}/g" \
+	$CWD/rc.$PRGNAM > $PKG/etc/rc.d/rc.$PRGNAM.new
 chmod 755 $PKG/etc/rc.d/rc.$PRGNAM.new
 
 mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION

@@ -4,13 +4,14 @@
 # /etc/rc.d/rc.unifi
 # ----------------------------------------------------------------------
 
+PRGNAM=unifi-controller
 SERVICE_NAME="UniFi Controller"
 UNIFI_USER=@UNIFI_USER@
 UNIFI_GROUP=@UNIFI_GROUP@
 SHELL=/bin/bash
 JAVA=/usr/bin/java
-BIN_DIR=/usr/lib/unifi
-DATA_DIR=/var/lib/unifi
+BIN_DIR=/usr/lib/$PRGNAM
+DATA_DIR=/var/lib/$PRGNAM
 JAR=$BIN_DIR/lib/ace.jar
 MEM_LIMIT=1024M
 PID_FILE=$DATA_DIR/run/mongod.pid
@@ -51,7 +52,6 @@ start() {
 		echo "Error."
 		exit 1
 	fi
-    fi
 }
 
 stop() {
