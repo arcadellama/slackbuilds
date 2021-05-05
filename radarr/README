@@ -5,8 +5,3 @@ It can also be configured to automatically upgrade the quality of
 existing files in the library when a better quality format becomes
 available.
 
-There is a bug in the included dotnet core 3.1.
-To run as a non-root user, first add this to PATH:
-
-  export COMPlus_EnableDiagnostics=0
-

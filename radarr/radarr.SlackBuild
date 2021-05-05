@@ -23,7 +23,7 @@
 #  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 PRGNAM=radarr
-VERSION=${VERSION:-3.0.2.4552}
+VERSION=${VERSION:-3.1.1.4954}
 BUILD=${BUILD:-1}
 TAG=${TAG:-_SBo}
 
@@ -38,22 +38,22 @@ OUTPUT=${OUTPUT:-/tmp}
 set -e
 
 # Bail if user or group isn't valid on your system
-if ! getent passwd $SONARR_USER 1>/dev/null 2>/dev/null; then
+if ! getent passwd $RADARR_USER 1>/dev/null 2>/dev/null; then
   cat << EOF
 
   You must have a ombi user to run this script
 
-  # groupadd $SONARR_GROUP
-  # useradd -r -d /var/lib/$PRGNAM -g $SONARR_GROUP $SONARR_USER
+  # groupadd $RADARR_GROUP
+  # useradd -r -d /var/lib/$PRGNAM -g $RADARR_GROUP $RADARR_USER
 
 EOF
 
   exit 1
-elif ! getent group $SONARR_GROUP 1>/dev/null 2>/dev/null; then
+elif ! getent group $RADARR_GROUP 1>/dev/null 2>/dev/null; then
   cat << EOF
 
   You must have a ombi group to run this script
-  # groupadd $SONARR_GROUP
+  # groupadd $RADARR_GROUP
 
 EOF
   exit 1
