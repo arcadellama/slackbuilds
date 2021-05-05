@@ -1,0 +1,21 @@
+UniFi Network Controller is a centralized management system
+for Ubiquiti UniFi products.
+
+You'll need to create a unifi user in order to run with the provided init
+script:
+
+# group add unifi
+# useradd -r -d /var/lib/unifi -g unifi unifi
+
+You'll also want to add the following to /etc/rc.d/rc.local
+
+if [ -x /etc/rc.d/rc.unifi-controller ]; then
+    /etc/rc.d/rc./unifi-controller start
+fi
+
+And the following to /etc/rc.d/rc.local_shutdown
+
+if [ -x /etc/rc.d/rc.unifi-controller ]; then
+    /etc/rc.d/rc./unifi-controller stop
+fi
+
