@@ -1,4 +1,8 @@
 #!/bin/sh
+# ----------------------------------------------------------------------
+# Slackware init script for Radarr:
+# /etc/rc.d/rc.radarr
+# ----------------------------------------------------------------------
 
 PRGNAM=radarr
 RADARR_USER=@RADARR_USER@
@@ -20,7 +24,7 @@ start() {
 	    echo "Starting $PRGNAM."
 	    if [ ! -d $DATA_DIR ]; then
 		mkdir -p $DATA_DIR
-		if [ $? -eq 1]; then
+		if [ $? -ne 0]; then
 		    echo "ERROR: Could not create $DATA_DIR. System error code $?"
 		    exit 1
 		fi
@@ -29,6 +33,14 @@ start() {
 	    cd $DATA_DIR
 	    su -m $RADARR_USER -s /bin/bash -c \
 		"exec $DAEMON $DAEMON_OPTS &" >/dev/null 2>&1
+	    sleep 3
+	    if pgrep -a -F $PIDFILE 2>/dev/null | grep -q Radarr; then
+		echo "Success."
+		exit 0
+	    else
+		echo "Error."
+		exit 1
+	    fi
     fi
 
 }
@@ -37,6 +49,14 @@ stop() {
     if pgrep -l -F $PIDFILE 2>/dev/null | grep -q Radarr; then
 	echo "Stopping $PRGNAM..."
 	pkill -F $PIDFILE 2> /dev/null
+	    sleep 3
+	    if pgrep -a -F $PIDFILE 2>/dev/null | grep -q Radarr; then
+		echo "Error."
+		exit 1
+	    else
+		echo "Success."
+		exit 0
+	    fi
     else
 	echo "$PRGNAM does not appear to be running."
 	exit 1

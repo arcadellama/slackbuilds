@@ -28,6 +28,7 @@ BUILD=${BUILD:-1}
 TAG=${TAG:-_SBo}
 
 RADARR_USER=${RADARR_USER:-radarr}
+RADARR_GROUP=${RADARR_GROUP:-radarr}
 
 CWD=$(pwd)
 TMP=${TMP:-/tmp/SBo}
@@ -36,13 +37,23 @@ OUTPUT=${OUTPUT:-/tmp}
 
 set -e
 
-# Bail if user isn't valid on the system
-if getent passwd $RADARR_USER 1>dev/null 2>dev/null; then
-    cat << EOF
+# Bail if user or group isn't valid on your system
+if ! getent passwd $SONARR_USER 1>/dev/null 2>/dev/null; then
+  cat << EOF
 
-    You must have a $RADARR_USER to run this script
+  You must have a ombi user to run this script
 
-    # useradd -r -d /var/lib/$PRGNAM $RADARR_USER
+  # groupadd $SONARR_GROUP
+  # useradd -r -d /var/lib/$PRGNAM -g $SONARR_GROUP $SONARR_USER
+
+EOF
+
+  exit 1
+elif ! getent group $SONARR_GROUP 1>/dev/null 2>/dev/null; then
+  cat << EOF
+
+  You must have a ombi group to run this script
+  # groupadd $SONARR_GROUP
 
 EOF
   exit 1
@@ -69,7 +80,9 @@ cp -a $CWD/package_info $PKG/usr/lib/$PRGNAM/package_info
 echo "PackageVersion=$VERSION-$ARCH-$BUILD$TAG" >> $PKG/usr/lib/$PRGNAM/package_info
 
 mkdir -p $PKG/etc/rc.d
-sed -e "s/@RADARR_USER@/$RADARR_USER/g" $CWD/rc.$PRGNAM > $PKG/etc/rc.d/rc.$PRGNAM.new
+sed -e "s/@RADARR_USER@/$RADARR_USER/g" \
+    -e "s/@RADARR_GROUP@/$RADARR_GROUP/g" \
+    $CWD/rc.$PRGNAM > $PKG/etc/rc.d/rc.$PRGNAM.new
 
 find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
   | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true

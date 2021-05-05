@@ -1,8 +1,12 @@
-#!/bin/bash
+#!/bin/sh
+# ----------------------------------------------------------------------
+# Slackware init script for Unifi:
+# /etc/rc.d/rc.ombi
+# ----------------------------------------------------------------------
 
 PRGNAM=ombi
-OMBI_USER=ombi
-OMBI_USER=ombi
+OMBI_USER=@OMBI_USER@
+OMBI_GROUP=@OMBI_GROUP@
 DATA_DIR="/var/lib/$PRGNAM"
 DAEMON="/usr/lib/ombi/Ombi"
 DAEMON_OPTS="--storage $DATA_DIR --host http://*:5000"
@@ -19,44 +23,51 @@ start() {
     if [ $(running) -ne 0 ]; then
 	echo "$PRGNAM appears to already be running."
 	exit 1
-    else
-	if [ -e $PIDFILE ]; then
-	    echo "There appears to be a stale pidfile at $PIDFILE."
-	    exit 1
-	fi
+    fi
+    if [ -e $PIDFILE ]; then
+	echo "There appears to be a stale pidfile at $PIDFILE."
+	exit 1
     fi
 
     if [ ! -d $DATA_DIR ]; then
-	mkdir -p $DATA_DIR && \
-		cp -a /usr/lib/ombi/{ClientApp,wwwroot,appsettings.json} \
-		$DATA_DIR
-
+	mkdir -p $DATA_DIR 
 	if [ $? -ne 0 ]; then
 	    echo "Error. Could not initialize $DATA_DIR."
 	    exit 1
 	fi
     fi
 
-    echo "Starting $PRGNAM."
-    rm -f $PIDFILE
     chown -R $OMBI_USER:$OMBI_GROUP $DATA_DIR
-
     if [ $? -ne 0 ]; then
 	echo "Error. Could not own $DATA_DIR with $OMBI_USER:$OMBI_GROUP."
 	exit 1
     fi
 
+    for i in {ClientApp,wwwroot,appsettings.json}; do
+	if [ ! -d $DATA_DIR/"$i" ]; then
+	    cp -a /usr/lib/ombi/"$i" $DATA_DIR
+	    if [ $? -ne 0 ]; then
+		echo "Error. Could not link $DATA_DIR/"$i"."
+		exit 1
+	    fi
+	fi
+    done
+
+    echo "Starting $PRGNAM."
+    rm -f $PIDFILE
+    chown -R $OMBI_USER:$OMBI_GROUP $DATA_DIR
+    if [ $? -ne 0 ]; then
+	echo "Error. Could not own $DATA_DIR with $OMBI_USER:$OMBI_GROUP."
+	exit 1
+    fi
     cd $DATA_DIR
     su -m $OMBI_USER -s /bin/sh  \
 	-c "exec $DAEMON $DAEMON_OPTS &" >/dev/null 2>&1
-
     if [ $? -ne 0 ]; then
 	echo "Error."
 	exit 1
     fi
-
     sleep 3
-
     if [ $(running) -ne 0 ]; then
 	ps -ef | grep 'Ombi' | grep -v grep | awk '{print $2}' > $PIDFILE
 	echo "Success."

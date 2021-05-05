@@ -28,14 +28,7 @@ BUILD=${BUILD:-1}
 TAG=${TAG:-_SBo}
 
 SONARR_USER=${SONARR_USER:-sonarr}
-
-if [ -z "$ARCH" ]; then
-  case "$( uname -m )" in
-    i?86) ARCH=i586 ;;
-    arm*) ARCH=arm ;;
-       *) ARCH=$( uname -m ) ;;
-  esac
-fi
+SONARR_GROUP=${SONARR_GROUP:-sonarr}
 
 CWD=$(pwd)
 TMP=${TMP:-/tmp/SBo}
@@ -44,13 +37,23 @@ OUTPUT=${OUTPUT:-/tmp}
 
 set -e
 
-# Bail if user isn't valid on the system
-if getent passwd $SONARR_USER 1>dev/null 2>dev/null; then
-    cat << EOF
+# Bail if user or group isn't valid on your system
+if ! getent passwd $SONARR_USER 1>/dev/null 2>/dev/null; then
+  cat << EOF
 
-    You must have a $SONARR_USER to run this script
+  You must have a ombi user to run this script
 
-    # useradd -r -d /var/lib/$PRGNAM $SONARR_USER
+  # groupadd $SONARR_GROUP
+  # useradd -r -d /var/lib/$PRGNAM -g $SONARR_GROUP $SONARR_USER
+
+EOF
+
+  exit 1
+elif ! getent group $SONARR_GROUP 1>/dev/null 2>/dev/null; then
+  cat << EOF
+
+  You must have a ombi group to run this script
+  # groupadd $SONARR_GROUP
 
 EOF
   exit 1
@@ -75,7 +78,9 @@ mkdir -p $PKG/usr/lib/$PRGNAM/
 cp -a $PWD/* $PKG/usr/lib/$PRGNAM
 
 mkdir -p $PKG/etc/rc.d
-sed -e "s/@SONARR_USER@/$SONARR_USER/g" $CWD/rc.$PRGNAM > $PKG/etc/rc.d/rc.$PRGNAM.new
+sed -e "s/@SONARR_USER@/$SONARR_USER/g" \
+    -e "s/@SONARR_GROUP@/$SONARR_GROUP/g" \
+    $CWD/rc.$PRGNAM > $PKG/etc/rc.d/rc.$PRGNAM.new
 
 find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
   | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
