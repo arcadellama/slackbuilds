@@ -19,10 +19,18 @@ start() {
     for i in {data,logs,run,work}; do
 	if [ ! -d $DATA_DIR/"$i" ]; then
 	    mkdir -p $DATA_DIR/"$i"
+	    if [ $? -ne 0 ]; then
+		    echo "Error initializing $DATA_DIR/$i"
+		    exit 1
+	    fi
 	fi
 
 	if [ ! -L $BIN_DIR/"$i" ]; then
 	    ln -s $DATA_DIR/"$i" $BIN_DIR/"$i"
+	    if [ $? -ne 0 ]; then
+		    echo "Error linking $DATA_DIR/$i"
+		    exit 1
+	    fi
 	fi
     done
     chown -R $UNIFI_USER:$UNIFI_GROUP $DATA_DIR
@@ -30,10 +38,10 @@ start() {
     if pgrep -l -F $PID_FILE 2>/dev/null | grep -q mongod; then
 	echo "$SERVICE_NAME is already running"
 	exit 1
-    else
-	echo "Starting $SERVICE_NAME: "
-	cd $DATA_DIR
-	su -l $UNIFI_USER -s $SHELL \
+    fi
+    echo "Starting $SERVICE_NAME: "
+    cd $DATA_DIR
+    su -l $UNIFI_USER -s $SHELL \
 	    -c "$JAVA -Xmx$MEM_LIMIT -jar $JAR start &> /dev/null &"
 	sleep 3
 	if pgrep -l -F $PID_FILE 2>/dev/null | grep -q mongod; then
