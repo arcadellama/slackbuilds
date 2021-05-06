@@ -1,66 +1,100 @@
-#!/bin/sh
+#!/bin/bash
 # ----------------------------------------------------------------------
 # Slackware init script for Radarr:
 # /etc/rc.d/rc.radarr
 # ----------------------------------------------------------------------
 
 PRGNAM=radarr
-RADARR_USER=@RADARR_USER@
-RADARR_GROUP=@RADARR_GROUP@
+SRVCNAM=Radarr
+SONARR_USER=@SONARR_USER@
+SONARR_GROUP=@SONARR_GROUP@
 DATA_DIR="/var/lib/$PRGNAM"
-BASE_DIR="/usr/lib/$PRGNAM"
-DAEMON="/usr/lib/radarr/bin/Radarr"
+DAEMON="/usr/lib/radarr/Radarr"
 DAEMON_OPTS="-nobrowser -data=$DATA_DIR"
 PIDFILE=$DATA_DIR/$PRGNAM.pid
 
-set -e
-
 start() {
-
-    if pgrep -l -F $PIDFILE 2>/dev/null | grep -q Radarr; then
-	echo "$PRGNAM appears to already be running."
-	    exit 1
-	else 
-	    echo "Starting $PRGNAM."
-	    if [ ! -d $DATA_DIR ]; then
-		mkdir -p $DATA_DIR
-		if [ $? -ne 0]; then
-		    echo "ERROR: Could not create $DATA_DIR. System error code $?"
-		    exit 1
-		fi
-	    fi
-	    chown -R $RADARR_USER:$RADARR_GROUP $DATA_DIR
-	    cd $DATA_DIR
-	    su -m $RADARR_USER -s /bin/bash -c \
-		"exec $DAEMON $DAEMON_OPTS &" >/dev/null 2>&1
-	    sleep 3
-	    if pgrep -a -F $PIDFILE 2>/dev/null | grep -q Radarr; then
-		echo "Success."
-		exit 0
-	    else
-		echo "Error."
+	# Check if already running
+	if pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then
+		echo "$SRVCNAM appears to already be running."
 		exit 1
-	    fi
-    fi
+	fi
+	if [ $(ps -ef | grep "$SRVCNAM" | grep -v grep | wc -l) -ne 0 ];
+		if [ -r $PIDFILE ]; then
+			echo "$SRVCNAM apears to already be running with a stale lock file at $PIDFILE."
+			exit 1
+		fi
+		echo "$SRVCNAM appears to be running without a lock file at $PIDFILE."
+		exit 1
+	fi
+
+	# Create working directory if it doesn't exist
+	if [ ! -d $DATA_DIR ]; then
+		mkdir -p $DATA_DIR
+		if [ $? -ne 0 ]; then
+			echo "Error creating $DATA_DIR."
+			exit 1
+		fi
+	fi
+
+	# Take ownership of the working directory
+	chown -R $SONARR_USER:$SONARR_GROUP $DATA_DIR
+	if [ $? -ne 0 ]; then
+		echo "Error changing permissions to $DATA_DIR."
+		exit 1
+	fi
+
+	# Start the service
+	echo "Starting $SRVCNAM:"
+	cd $DATA_DIR
+	su -m $SONARR_USER -s /bin/bash -c \
+		"exec $DAEMON $DAEMON_OPTS &" >/dev/null 2>&1
+
+	# Check that it worked
+	wait=0
+	while [ $wait -le 10 ]; do
+		if pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then
+			echo "Success."
+			exit 0
+		fi
+		echo -n " . "
+		sleep 1
+		(( wait ++ ))
+	done
+	
+	if [ $(ps -ef | grep "$SRVCNAM" | grep -v grep | wc -l) -ne 0 ];
+	    echo "$SRVCNAM appears to be running without a lock file at $PIDFILE."
+	    exit 1
+	fi
+
+	echo "Error starting $SRVCNAM."
+	exit 1
 
 }
 
 stop() {
-    if pgrep -l -F $PIDFILE 2>/dev/null | grep -q Radarr; then
-	echo "Stopping $PRGNAM..."
-	pkill -F $PIDFILE 2> /dev/null
-	    sleep 3
-	    if pgrep -a -F $PIDFILE 2>/dev/null | grep -q Radarr; then
-		echo "Error."
+	if pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then
+		echo "Stopping $SRVCNAM:"
+		wait=0
+		while [ $wait -le 15 ]; do
+			if ! pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then
+				echo "Success."
+				exit 0
+			fi
+			echo -n " . "
+			sleep 1
+			(( wait ++ ))
+		done
+		echo "Error stopping $SRVCNAM."
 		exit 1
-	    else
-		echo "Success."
-		exit 0
-	    fi
-    else
-	echo "$PRGNAM does not appear to be running."
+	fi
+	if [ $(ps -ef | grep "$SRVCNAM" | grep -v grep | wc -l) -ne 0 ];
+		PROCESS=$(ps -ef | grep "$SRVCNAM" | grep -v grep | awk '{print $2}')
+		echo "$SRVCNAM appears to be running without a lock file as process $PROCESS."
+		exit 1
+	fi
+	echo "$SRVCNAM does not appear to be running."
 	exit 1
-    fi
 }
 
 case "$1" in
@@ -71,19 +105,20 @@ case "$1" in
 	stop
 	;;
     status)
-	if pgrep -l -F $PIDFILE 2>/dev/null | grep -q Radarr; then
-	    echo "$PRGNAM running as process $(cat $PIDFILE)"
-	else
-	    echo "$PRGNAM is not running"
+	if pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then
+	    echo "$SRVCNAM running as process $(cat $PIDFILE)"
+	    exit 0
+	elif [ $(ps -ef | grep "$SRVCNAM" | grep -v grep | wc -l) -ne 0 ]; then
+		PROCESS=$(ps -ef | grep "$SRVCNAM" | grep -v grep | awk '{print $2}')
+		echo "$SRVCNAM appears to be running without a lock file as process $PROCESS."
+		exit 1
+    	else
+	    echo "$SRVCNAM is not running"
+	    exit 1
 	fi
 	;;
-    restart)
-	stop
-	sleep 3
-	start
-	;;
     *)
-	echo "Usage start|stop|restart|status"
+	echo "Usage start|stop|status"
 	;;
 esac
 

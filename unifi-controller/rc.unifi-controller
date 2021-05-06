@@ -14,7 +14,7 @@ BIN_DIR=/usr/lib/$PRGNAM
 DATA_DIR=/var/lib/$PRGNAM
 JAR=$BIN_DIR/lib/ace.jar
 MEM_LIMIT=1024M
-PID_FILE=$DATA_DIR/run/mongod.pid
+PIDFILE=$DATA_DIR/run/mongod.pid
 
 start() {
     if [ ! -d $DATA_DIR ]; then
@@ -48,22 +48,22 @@ start() {
 	fi
     done
 
-    if pgrep -l -F $PID_FILE 2>/dev/null | grep -q mongod; then
+    if pgrep -l -F $PIDFILE 2>/dev/null | grep -q mongod; then
 	echo "$SERVICE_NAME is already running"
     fi
     echo "Starting $SERVICE_NAME: "
     cd $DATA_DIR
     su -l $UNIFI_USER -s $SHELL \
 	    -c "$JAVA -Xmx$MEM_LIMIT -jar $JAR start &> /dev/null &"
-    count=0
-    while [ $count -le 15 ]; do
-	    if pgrep -l -F $PID_FILE 2>/dev/null | grep -q mongod; then
+    wait=0
+    while [ $wait -le 15 ]; do
+	    if pgrep -l -F $PIDFILE 2>/dev/null | grep -q mongod; then
 		    echo "Success."
 		    exit 0
 	    else
 		    echo -n " . "
 		    sleep 1
-		    (( count++ ))
+		    (( wait++ ))
 	    fi
     done
     echo "Error."
@@ -71,20 +71,20 @@ start() {
 }
 
 stop() {
-    if pgrep -l -F $PID_FILE 2>/dev/null | grep -q mongod; then
+    if pgrep -l -F $PIDFILE 2>/dev/null | grep -q mongod; then
 	echo "Stopping $SERVICE_NAME: "
 	cd $DATA_DIR
 	su -l $UNIFI_USER -s $SHELL \
 	    -c "$JAVA -jar $JAR stop &> /dev/null"
-	count=0
-	while [ $count -le 15 ]; do
-	if ! pgrep -l -F $PID_FILE 2>/dev/null | grep -q mongod; then
+	wait=0
+	while [ $wait -le 15 ]; do
+	if ! pgrep -l -F $PIDFILE 2>/dev/null | grep -q mongod; then
 		echo "Success."
 		exit 0
 	else
 		echo -n " . "
 		sleep 1
-		(( count++ ))
+		(( wait++ ))
 	fi
         done
 	echo "Error stopping $SERVICE_NAME."
@@ -103,8 +103,8 @@ case $1 in
     stop
   ;;
   status)
-    if pgrep -l -F $PID_FILE 2>/dev/null | grep -q mongod; then
-	echo "$SERVICE_NAME running as process $(cat $PID_FILE)"
+    if pgrep -l -F $PIDFILE 2>/dev/null | grep -q mongod; then
+	echo "$SERVICE_NAME running as process $(cat $PIDFILE)"
     else
       echo "$SERVICE_NAME is not running"
     fi
