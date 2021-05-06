@@ -55,14 +55,19 @@ start() {
     cd $DATA_DIR
     su -l $UNIFI_USER -s $SHELL \
 	    -c "$JAVA -Xmx$MEM_LIMIT -jar $JAR start &> /dev/null &"
-	sleep 5
-	if pgrep -l -F $PID_FILE 2>/dev/null | grep -q mongod; then
-		echo "Success."
-		exit 0
-	else
-		echo "Error."
-		exit 1
-	fi
+    count=0
+    while [ $count -le 15 ]; do
+	    if pgrep -l -F $PID_FILE 2>/dev/null | grep -q mongod; then
+		    echo "Success."
+		    exit 0
+	    else
+		    echo -n " . "
+		    sleep 1
+		    (( count++ ))
+	    fi
+    done
+    echo "Error."
+    exit 1
 }
 
 stop() {
@@ -70,14 +75,20 @@ stop() {
 	echo "Stopping $SERVICE_NAME: "
 	cd $DATA_DIR
 	su -l $UNIFI_USER -s $SHELL \
-	    -c "$JAVA -jar $JAR stop"
-	if pgrep -l -F $PID_FILE 2>/dev/null | grep -q mongod; then
-	    echo "Error stopping $SERVICE_NAME at $(cat $PIDFILE)."
-		exit 1
-	else
+	    -c "$JAVA -jar $JAR stop &> /dev/null"
+	count=0
+	while [ $count -le 15 ]; do
+	if ! pgrep -l -F $PID_FILE 2>/dev/null | grep -q mongod; then
 		echo "Success."
 		exit 0
+	else
+		echo -n " . "
+		sleep 1
+		(( count++ ))
 	fi
+        done
+	echo "Error stopping $SERVICE_NAME."
+	exit 1
     else
 	echo "$SERVICE_NAME is not running"
 	exit 1

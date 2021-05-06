@@ -4,8 +4,8 @@ for Ubiquiti UniFi products.
 You'll need to create a unifi user in order to run with the provided init
 script:
 
-# group add unifi
-# useradd -r -d /var/lib/unifi -g unifi unifi
+# groupadd unifi
+# useradd -r -d /var/lib/unifi-controller -g unifi unifi
 
 You'll also want to add the following to /etc/rc.d/rc.local
 
