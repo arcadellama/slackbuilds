@@ -6,10 +6,10 @@
 
 PRGNAM=radarr
 SRVCNAM=Radarr
-SONARR_USER=@SONARR_USER@
-SONARR_GROUP=@SONARR_GROUP@
+RADARR_USER=@RADARR_USER@
+RADARR_GROUP=@RADARR_GROUP@
 DATA_DIR="/var/lib/$PRGNAM"
-DAEMON="/usr/lib/radarr/Radarr"
+DAEMON="/usr/lib/radarr/bin/Radarr"
 DAEMON_OPTS="-nobrowser -data=$DATA_DIR"
 PIDFILE=$DATA_DIR/$PRGNAM.pid
 
@@ -38,7 +38,7 @@ start() {
 	fi
 
 	# Take ownership of the working directory
-	chown -R $SONARR_USER:$SONARR_GROUP $DATA_DIR
+	chown -R $RADARR_USER:$RADARR_GROUP $DATA_DIR
 	if [ $? -ne 0 ]; then
 		echo "Error changing permissions to $DATA_DIR."
 		exit 1
@@ -47,7 +47,7 @@ start() {
 	# Start the service
 	echo "Starting $SRVCNAM:"
 	cd $DATA_DIR
-	su -m $SONARR_USER -s /bin/bash -c \
+	su -m $RADARR_USER -s /bin/bash -c \
 		"exec $DAEMON $DAEMON_OPTS &" >/dev/null 2>&1
 
 	# Check that it worked
@@ -62,7 +62,7 @@ start() {
 		(( wait ++ ))
 	done
 	
-	if [ $(ps -ef | grep "$SRVCNAM" | grep -v grep | wc -l) -ne 0 ];
+	if [ $(ps -ef | grep "$SRVCNAM" | grep -v grep | wc -l) -ne 0 ]; then
 	    echo "$SRVCNAM appears to be running without a lock file at $PIDFILE."
 	    exit 1
 	fi
@@ -75,6 +75,7 @@ start() {
 stop() {
 	if pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then
 		echo "Stopping $SRVCNAM:"
+		kill -15 $(cat $PIDFILE)
 		wait=0
 		while [ $wait -le 15 ]; do
 			if ! pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then
@@ -85,12 +86,12 @@ stop() {
 			sleep 1
 			(( wait ++ ))
 		done
+		if [ $(ps -ef | grep "$SRVCNAM" | grep -v grep | wc -l) -ne 0 ]; then
+			PROCESS=$(ps -ef | grep "$SRVCNAM" | grep -v grep | awk '{print $2}')
+			echo "$SRVCNAM appears to be running without a lock file as process $PROCESS."
+			exit 1
+		fi
 		echo "Error stopping $SRVCNAM."
-		exit 1
-	fi
-	if [ $(ps -ef | grep "$SRVCNAM" | grep -v grep | wc -l) -ne 0 ];
-		PROCESS=$(ps -ef | grep "$SRVCNAM" | grep -v grep | awk '{print $2}')
-		echo "$SRVCNAM appears to be running without a lock file as process $PROCESS."
 		exit 1
 	fi
 	echo "$SRVCNAM does not appear to be running."
