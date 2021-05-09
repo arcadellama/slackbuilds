@@ -67,7 +67,6 @@ start() {
 		"exec $DAEMON $DAEMON_OPTS &" >/dev/null 2>&1
 
 	# Check that it worked
-	# Use the following if service creates its own lock file
 	wait=0
 	while [ $wait -le 10 ]; do
 		PID=$(ps -ef | grep $SRVCNAM | grep -v grep | awk '{print $2}')
