@@ -12,7 +12,7 @@ OMBI_USER=ombi
 OMBI_GROUP=ombi
 DATA_DIR="/var/lib/$PRGNAM"
 DAEMON="/usr/lib/ombi/Ombi"
-DAEMON_OPTS="--storage $DAtA_DIR --host http://*:5000"
+DAEMON_OPTS="--storage $DATA_DIR --host http://*:5000"
 PIDFILE=$DATA_DIR/$PRGNAM.pid
 
 start() {

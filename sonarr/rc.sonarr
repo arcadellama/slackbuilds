@@ -19,7 +19,8 @@ start() {
 		echo "$SRVCNAM appears to already be running."
 		exit 1
 	fi
-	if [ $(ps -ef | grep "$SRVCNAM" | grep -v grep | wc -l) -ne 0 ]; then
+
+	if [ $(pidof $SRVCNAM) -ne 0 ]; then
 		if [ -r $PIDFILE ]; then
 			echo "$SRVCNAM apears to already be running with a stale lock file at $PIDFILE."
 			exit 1
@@ -45,25 +46,23 @@ start() {
 	fi
 
 	# Start the service
-	echo "Starting $SRVCNAM:"
+	echo "Starting $SRVCNAM"
 	cd $DATA_DIR
 	su -m $SONARR_USER -s /bin/bash -c \
-		"exec $DAEMON $DAEMON_OPTS &" >/dev/null 2>&1
+		"exec -a $SRVCNAM $DAEMON $DAEMON_OPTS &" >/dev/null 2>&1
 
 	# Check that it worked
-	wait=0
-	while [ $wait -le 10 ]; do
+	wait=15
+	while [ $wait -gt 0 ]; do
 		if pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then
-			echo "Success."
 			exit 0
 		fi
-		echo -n " . "
 		sleep 1
-		(( wait ++ ))
+		(( wait -- ))
 	done
 	
-	if [ $(ps -ef | grep "$SRVCNAM" | grep -v grep | wc -l) -ne 0 ]; then
-	    echo "$SRVCNAM appears to be running without a lock file at $PIDFILE."
+	if [ $(pidof $SRVCNAM) ]; then
+	    echo "Error: $SRVCNAM appears to be running without a lock file at $PIDFILE."
 	    exit 1
 	fi
 
@@ -74,21 +73,19 @@ start() {
 
 stop() {
 	if pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then
-		echo "Stopping $SRVCNAM:"
+		echo "Stopping $SRVCNAM"
 		kill -15 $(cat $PIDFILE)
-		wait=0
-		while [ $wait -le 15 ]; do
-			if ! pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then
-				echo "Success."
+		wait=15
+		while [ $wait -gt 0 ]; do
+			if [ $(pidof $SRVCNAM) -ne $(cat $PIDFILE) ]; then
+				rm -f $PIDFILE
 				exit 0
 			fi
-			echo -n " . "
 			sleep 1
-			(( wait ++ ))
+			(( wait -- ))
 		done
 		if [ $(ps -ef | grep "$SRVCNAM" | grep -v grep | wc -l) -ne 0 ]; then
-			PROCESS=$(ps -ef | grep "$SRVCNAM" | grep -v grep | awk '{print $2}')
-			echo "$SRVCNAM appears to be running without a lock file as process $PROCESS."
+			echo "$SRVCNAM appears to be running without a lock file as process $(pidof $SRVCNAM)."
 			exit 1
 		fi
 		echo "Error stopping $SRVCNAM."
