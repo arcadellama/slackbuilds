@@ -22,5 +22,4 @@ preserve_perms() {
   config $NEW
 }
 
-config var/lib/channels-dvr/appsettings.json.new
 preserve_perms etc/rc.d/rc.channels-dvr.new

@@ -1,102 +1,100 @@
-#!/bin/sh
+#!/bin/bash
 # ----------------------------------------------------------------------
-# Slackware init script for Unifi:
+#
+# Slackware init script for Channels-DVR:
 # /etc/rc.d/rc.channels-dvr
+#
 # ----------------------------------------------------------------------
 
 PRGNAM=channels-dvr
+SRVCNAM=Channels-DVR
 CHANNELS_DVR_USER=@CHANNELS_DVR_USER@
-CHANNELS_DVR_GROUP=@CHANNELS_DVR_GROUP@
-DATA_DIR="/var/lib/$PRGNAM"
-DAEMON="/usr/lib/channels-dvr/Ombi"
-DAEMON_OPTS="--storage $DATA_DIR --host http://*:5000"
+CHANNELS_DVR_GROUP=%CHANNELS_DVR_GROUP@
+DATA_DIR="/var/lib/$PRGNAM/data"
+DAEMON="/usr/lib/$PRGNAM/latest/$PRGNAM"
+DAEMON_OPTS=""
 PIDFILE=/var/run/$PRGNAM.pid
 
-set -e
-
-running() {
-    ps -ef | grep 'Ombi' | grep -v grep | wc -l
-}
-
 start() {
-
-    if [ $(running) -ne 0 ]; then
-	echo "$PRGNAM appears to already be running."
-	exit 1
-    fi
-    if [ -e $PIDFILE ]; then
-	echo "There appears to be a stale pidfile at $PIDFILE."
-	exit 1
-    fi
-
-    if [ ! -d $DATA_DIR ]; then
-	mkdir -p $DATA_DIR 
-	if [ $? -ne 0 ]; then
-	    echo "Error. Could not initialize $DATA_DIR."
-	    exit 1
-	fi
-    fi
-
-    chown -R $CHANNELS_DVR_USER:$CHANNELS_DVR_GROUP $DATA_DIR
-    if [ $? -ne 0 ]; then
-	echo "Error. Could not own $DATA_DIR with $CHANNELS_DVR_USER:$CHANNELS_DVR_GROUP."
-	exit 1
-    fi
-
-    for i in {ClientApp,wwwroot,appsettings.json}; do
-	if [ ! -d $DATA_DIR/"$i" ]; then
-	    cp -a /usr/lib/channels-dvr/"$i" $DATA_DIR
-	    if [ $? -ne 0 ]; then
-		echo "Error. Could not link $DATA_DIR/"$i"."
+	# Check if already running
+	if pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then
+		echo "$SRVCNAM appears to already be running."
 		exit 1
-	    fi
-	fi
-    done
 
-    echo "Starting $PRGNAM."
-    rm -f $PIDFILE
-    chown -R $CHANNELS_DVR_USER:$CHANNELS_DVR_GROUP $DATA_DIR
-    if [ $? -ne 0 ]; then
-	echo "Error. Could not own $DATA_DIR with $CHANNELS_DVR_USER:$CHANNELS_DVR_GROUP."
+	elif [ pidof $SRVCNAM >/dev/null ]; then
+
+		if [ -r $PIDFILE ]; then
+			echo "$SRVCNAM apears to already be running with a stale lock file at $PIDFILE."
+			exit 1
+		fi
+
+		echo "$SRVCNAM appears to be running without a lock file at $PIDFILE."
+		exit 1
+	fi
+
+	# Create working directory if it doesn't exist
+	if [ ! -d $DATA_DIR ]; then
+		mkdir -p $DATA_DIR
+		if [ $? -ne 0 ]; then
+			echo "Error creating $DATA_DIR."
+			exit 1
+		fi
+	fi
+
+	# Take ownership of the working directory
+	chown -R $CHANNELS_DVR_USER:$CHANNELS_DVR_GROUP $DATA_DIR
+	if [ $? -ne 0 ]; then
+		echo "Error setting ownership of $DATA_DIR."
+		exit 1
+	fi
+
+	# Start the service
+	rm -f $PIDFILE
+	cd $DATA_DIR
+	ulimit -n 8192
+	echo "Starting $SRVCNAM:"
+	su -m $CHANNELS_DVR_USER -s /bin/sh -c \
+		"exec -a $SRVCNAM $DAEMON >> $DATA_DIR/$PRGNAM.log &" >/dev/null 2>&1
+
+	# Check that it worked
+	# Use the following for services that do not create their own lock file
+	wait=15
+	while [ $wait -gt 0 ]; do
+	    PID=$(pidof $SRVCNAM)
+	    if [ $PID ]; then
+		echo $PID > $PIDFILE
+		exit 0
+	    fi
+	    sleep 1
+	    (( wait -- ))
+	done
+
+	echo "Error starting $SRVCNAM."
 	exit 1
-    fi
-    cd $DATA_DIR
-    su -m $CHANNELS_DVR_USER -s /bin/sh  \
-	-c "exec $DAEMON $DAEMON_OPTS &" >/dev/null 2>&1
-    if [ $? -ne 0 ]; then
-	echo "Error."
-	exit 1
-    fi
-    sleep 3
-    if [ $(running) -ne 0 ]; then
-	ps -ef | grep 'Ombi' | grep -v grep | awk '{print $2}' > $PIDFILE
-	echo "Success."
-	exit 0
-    else
-	echo "Error: Cannot start $PRGNAM."
-	exit 1
-    fi
 
 }
 
 stop() {
-
-    if [ $(running) -ne 0 ]; then
-	echo "Stopping $PRGNAM."
-	kill -15 $(cat $PIDFILE)
-	sleep 3
-	if [ $(running) -eq 0 ]; then
-	    echo "Success."
-	    rm -f $PIDFILE
-	    exit 0
-	else
-	    echo "Error: Could not successfuly stop $PRGNAM."
-	    exit 1
+	if pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then
+		echo "Stopping $SRVCNAM"
+		kill -15 $(cat $PIDFILE)
+		wait=15
+		while [ $wait -gt 0 ]; do
+			if ! pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then
+				rm -f $PIDFILE
+				exit 0
+			fi
+			sleep 1
+			(( wait -- ))
+		done
+		echo "Error stopping $SRVCNAM."
+		exit 1
 	fi
-    else
-	echo "$PRGNAM does not appear to be running."
-	exit 1
-    fi
+	if [ pidof $SRVCNAM >/dev/null ]; then
+	    echo "$SRVCNAM appears to be running without a lock file as process $(pidof $SRVCNAM)."
+		exit 1
+	fi
+	echo "$SRVCNAM does not appear to be running."
 }
 
 case "$1" in
@@ -107,19 +105,17 @@ case "$1" in
 	stop
 	;;
     status)
-	if [ $(running) -ne 0 ]; then
-	    echo "$PRGNAM is running as process $(cat $PIDFILE)."
-	else
-	    echo "$PRGNAM is not running."
+	if pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then
+	    echo "$SRVCNAM running as process $(cat $PIDFILE)"
+	elif [ pidof $SRVCNAM >/dev/null ]; then
+	    echo "$SRVCNAM appears to be running without a lock file as process $(pidof $SRVCNAM)."
+		exit 1
+    	else
+	    echo "$SRVCNAM is not running"
 	fi
 	;;
-    restart)
-	stop
-	sleep 3
-	start
-	;;
     *)
-	echo "Usage start|stop|restart|status"
+	echo "Usage start|stop|status"
 	;;
 esac
 

@@ -1,8 +1,10 @@
-Ombi is your friendly media request tool, automatically syncs with
-your media with your media servers!
+Channels DVR Server runs on your computer or NAS device at home. There's
+no cloud to worry about. Your recordings and shows will always be
+available. Simply install Channels DVR Server on a device and Channels
+will magically see it from any TV or device you own. 
 
-You'll need to create a channels-dvr user in order to run with the provided init
-script:
+You'll need to create a channels-dvr user in order to run with the
+provided init script:
 
 # groupadd channels-dvr
 # useradd -r -d /var/lib/channels-dvr -g channels-dvr channels-dvr

@@ -23,7 +23,7 @@
 #  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 PRGNAM=channels-dvr
-VERSION=${VERSION:-4.0.1342}
+VERSION=${VERSION:-2021.03.30.0356}
 BUILD=${BUILD:-1}
 TAG=${TAG:-_SBo}
 
@@ -72,22 +72,21 @@ mkdir -p $TMP $PKG $OUTPUT
 cd $TMP
 rm -rf $PRGNAM-$VERSION
 mkdir -p $PRGNAM-$VERSION
-tar xvf $CWD/linux-x64.tar.gz -C $PRGNAM-$VERSION
 cd $PRGNAM-$VERSION
+cp -a $CWD/* .
+
 chown -R root:root .
+
 find -L . \
  \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
   -o -perm 511 \) -exec chmod 755 {} \; -o \
  \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
   -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
 
-mkdir -p $PKG/usr/lib/$PRGNAM
-cp -a * $PKG/usr/lib/$PRGNAM
-chmod 755 $PKG/usr/lib/$PRGNAM/${PRGNAM^}
+mkdir -p $PKG/usr/lib/$PRGNAM/$VERSION
+cp -a * $PKG/usr/lib/$PRGNAM/$VERSION
 
-mkdir -p $PKG/var/lib/$PRGNAM
-cp -a appsettings.json $PKG/var/lib/$PRGNAM/appsettings.json.new
-cp -a ClientApp $PKG/var/lib/$PRGNAM
+mkdir -p $PKG/var/lib/$PRGNAM $PKG/var/lib/$PRGNAM/data
 chown -R $CHANNELS_DVR_USER:$CHANNELS_DVR_GROUP $PKG/var/lib/$PRGNAM
 
 mkdir -p $PKG/etc/rc.d
@@ -95,8 +94,9 @@ sed -e "s/@CHANNELS_DVR_USER@/${CHANNELS_DVR_USER}/g" \
     -e "s/@CHANNELS_DVR_GROUP@/${CHANNELS_DVR_GROUP}/g" \
     $CWD/rc.channels-dvr > $PKG/etc/rc.d/rc.channels-dvr.new
 
+( pushd $PKG/usr/lib/$PRGNAM; ln -nsf /usr/lib/$PRGNAM/$VERSION latest; popd )
+
 mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
-cp -a $CWD/README $PKG/usr/doc/$PRGNAM-$VERSION/README
 cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
 
 mkdir -p $PKG/install

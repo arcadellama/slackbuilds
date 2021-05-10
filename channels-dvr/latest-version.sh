@@ -9,34 +9,32 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-if [ -e $PRGNAM.info ]; then
-    . $PRGNAM.info
+if [ -f $PWD/$PRGNAM.info ]; then
+    . $PWD/$PRGNAM.info
     else
 	echo "Cannot find $PRGNAM.info"
 	exit 1
 fi
 
 update () {
-    sed -e "s|${VERSION}|${LATEST_VERSION}|g" $PRGNAM.info > $PRGNAM.info
+    sed -i "s|${VERSION}|${LATEST_VERSION}|g" $PWD/$PRGNAM.* 
 }
 
 prompt () {
     read -p "Do you want to update $PRGNAM from $VERSION to $LATEST_VERSION? " confirm
-    while true; do
-	case $confirm in
-	    [Yy]* )
-		update
-		exit 0
-		;;
-	    [Nn]* )
-		exit 0
-		;;
-		* )
-		echo "Invalid response."
-		exit 1
-		;;
-	esac
-    done
+    case $confirm in
+        [Yy]* )
+	    update
+	    exit 0
+	    ;;
+	[Nn]* )
+	    exit 0
+	    ;;
+	    * )
+	    echo "Invalid response."
+	    exit 1
+	    ;;
+    esac
 }
 
 if [ $LATEST_VERSION != $VERSION ]; then
