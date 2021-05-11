@@ -18,6 +18,7 @@ start() {
 	else 
 	    echo "Starting $PRGNAM."
 	    chown -R $NZBGET_USER:$NZBGET_USER $DATA_DIR
+	    rm -f $PIDFILE
 	    cd $DATA_DIR
 	    $DAEMON $DAEMON_OPTS -D
     fi
@@ -28,6 +29,7 @@ stop() {
 
     if pgrep -l -F $PIDFILE 2>/dev/null | grep -q $PRGNAM; then
 	$DAEMON $DAEMON_OPTS -Q
+	rm -f $PIDFILE
     else
 	echo "$PRGNAM does not appear to be running."
 	exit 1

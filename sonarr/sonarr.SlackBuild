@@ -27,6 +27,14 @@ VERSION=${VERSION:-3.0.6.1196}
 BUILD=${BUILD:-1}
 TAG=${TAG:-_SBo}
 
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i586 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
 SONARR_USER=${SONARR_USER:-sonarr}
 SONARR_GROUP=${SONARR_GROUP:-sonarr}
 
