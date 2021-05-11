@@ -1,7 +1,7 @@
 #!/bin/bash
 # ----------------------------------------------------------------------
 #
-# Slackware init script for NZBGet:
+# Slackware init script for nzbget:
 # /etc/rc.d/rc.nzbget
 #
 # ----------------------------------------------------------------------
@@ -11,7 +11,7 @@ SRVCNAM=nzbget
 NZBGET_USER=@NZBGET_USER@
 NZBGET_GROUP=@NZBGET_GROUP@
 DATA_DIR="/var/lib/$PRGNAM"
-PIDFILE=$DATA_DIR/$PRGNAM.lock
+PIDFILE=$DATA_DIR/$PRGNAM.pid
 DAEMON="/usr/bin/nzbget"
 DAEMON_OPTS="--configfile=$DATA_DIR/$PRGNAM.conf -o DaemonUsername=$NZBGET_USER -o LockFile=$PIDFILE"
 
@@ -28,7 +28,7 @@ start() {
 			exit 1
 		fi
 
-		echo "$SRVCNAM appears to be running without a lock file at $PIDFILE."
+		echo "$SRVCNAM appears to be running as service $(pidof $SRVCNAM) without a lock file at $PIDFILE."
 		exit 1
 	fi
 
@@ -56,7 +56,7 @@ start() {
 
 	# Check that it worked
 	# Use the following if service creates its own lock file
-	wait=15
+	wait=10
 	while [ $wait -gt 0 ]; do
 		if pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then
 			exit 0
@@ -65,8 +65,8 @@ start() {
 		(( wait -- ))
 	done
 	
-	if [ $(pidof $SRVCNAM) >/dev/null ];
-	    echo "Error: $SRVCNAM appears to be running without a lock file at $PIDFILE."
+	if [ $(pidof $SRVCNAM) >/dev/null ]; then
+	    echo "Error: $SRVCNAM appears to be running as service $(pidof $SRVCNAM) without a lock file at $PIDFILE."
 	    exit 1
 	fi
 
@@ -90,8 +90,8 @@ start() {
 stop() {
 	if pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then
 		echo "Stopping $SRVCNAM"
-		$DAEMON $DAEMON_OPTS -Q
-		wait=15
+		kill -15 $(cat $PIDFILE)
+		wait=10
 		while [ $wait -gt 0 ]; do
 			if ! pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then
 				rm -f $PIDFILE
@@ -100,11 +100,11 @@ stop() {
 			sleep 1
 			(( wait -- ))
 		done
+		if [ $(pidof $SRVCNAM) >/dev/null ]; then
+		    echo "$SRVCNAM appears to be running without a lock file at $PIDFILE as process $(pidof $SRVCNAM)."
+		    exit 1
+		fi
 		echo "Error stopping $SRVCNAM."
-		exit 1
-	fi
-	if [ $(pidof $SRVCNAM) >/dev/null ]; then
-		echo "$SRVCNAM appears to be running without a lock file as process $(pidof $SRVCNAM)."
 		exit 1
 	fi
 	echo "$SRVCNAM does not appear to be running."
@@ -118,12 +118,17 @@ case "$1" in
     stop)
 	stop
 	;;
+    restart)
+	start
+	sleep 3
+	stop
+	;;
     status)
 	if pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then
 	    echo "$SRVCNAM running as process $(cat $PIDFILE)"
 	    exit 0
     elif [ $(pidof $SRVCNAM) >/dev/null ]; then
-	    echo "$SRVCNAM appears to be running without a lock file as process $(pidof $SRVCNAM)."
+	    echo "$SRVCNAM appears to be running without a lock file at $PIDFILE as process $(pidof $SRVCNAM)."
 		exit 1
     	else
 	    echo "$SRVCNAM is not running"
@@ -131,7 +136,7 @@ case "$1" in
 	fi
 	;;
     *)
-	echo "Usage start|stop|status"
+	echo "Usage start|stop|restart|status"
 	;;
 esac
 
