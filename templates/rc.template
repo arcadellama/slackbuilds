@@ -24,7 +24,7 @@ start() {
 	elif [ $(pidof $SRVCNAM) >/dev/null ]; then
 
 		if [ -r $PIDFILE ]; then
-			echo "$SRVCNAM apears to already be running with a stale lock file at $PIDFILE."
+			echo "$SRVCNAM apears to already be running as service $(pidof $SRVCNAM) with a stale lock file at $PIDFILE."
 			exit 1
 		fi
 
