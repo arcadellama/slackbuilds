@@ -7,7 +7,7 @@
 # ----------------------------------------------------------------------
 
 PRGNAM=nzbget
-SRVCNAM=NZBGet
+SRVCNAM=nzbget
 NZBGET_USER=@NZBGET_USER@
 NZBGET_GROUP=@NZBGET_GROUP@
 DATA_DIR="/var/lib/$PRGNAM"
@@ -52,7 +52,7 @@ start() {
 	rm -f $PIDFILE
 	cd $DATA_DIR
 	echo "Starting $SRVCNAM"
-	exec -a $SRVCNAM $DAEMON $DAEMON_OPTS -D
+	$DAEMON $DAEMON_OPTS -D
 
 	# Check that it worked
 	# Use the following if service creates its own lock file
@@ -90,7 +90,7 @@ start() {
 stop() {
 	if pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then
 		echo "Stopping $SRVCNAM"
-		exec -a $SRVCNAM $DAEMON $DAEMON_OPTS -Q
+		$DAEMON $DAEMON_OPTS -Q
 		wait=15
 		while [ $wait -gt 0 ]; do
 			if ! pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then

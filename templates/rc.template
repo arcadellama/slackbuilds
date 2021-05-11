@@ -66,7 +66,7 @@ start() {
 		(( wait -- ))
 	done
 	
-	if [ $(pidof $SRVCNAM) >/dev/null ];
+	if [ $(pidof $SRVCNAM) >/dev/null ]; then
 	    echo "Error: $SRVCNAM appears to be running without a lock file at $PIDFILE."
 	    exit 1
 	fi
