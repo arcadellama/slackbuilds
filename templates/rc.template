@@ -28,7 +28,7 @@ start() {
 			exit 1
 		fi
 
-		echo "$SRVCNAM appears to be running without a lock file at $PIDFILE."
+		echo "$SRVCNAM appears to be running as service $(pidof $SRVCNAM) without a lock file at $PIDFILE."
 		exit 1
 	fi
 
@@ -57,7 +57,7 @@ start() {
 
 	# Check that it worked
 	# Use the following if service creates its own lock file
-	wait=15
+	wait=10
 	while [ $wait -gt 0 ]; do
 		if pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then
 			exit 0
@@ -67,7 +67,7 @@ start() {
 	done
 	
 	if [ $(pidof $SRVCNAM) >/dev/null ]; then
-	    echo "Error: $SRVCNAM appears to be running without a lock file at $PIDFILE."
+	    echo "Error: $SRVCNAM appears to be running as service $(pidof $SRVCNAM) without a lock file at $PIDFILE."
 	    exit 1
 	fi
 
@@ -92,7 +92,7 @@ stop() {
 	if pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then
 		echo "Stopping $SRVCNAM"
 		kill -15 $(cat $PIDFILE)
-		wait=15
+		wait=10
 		while [ $wait -gt 0 ]; do
 			if ! pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then
 				rm -f $PIDFILE
@@ -101,11 +101,11 @@ stop() {
 			sleep 1
 			(( wait -- ))
 		done
+		if [ $(pidof $SRVCNAM) >/dev/null ]; then
+		    echo "$SRVCNAM appears to be running without a lock file at $PIDFILE as process $(pidof $SRVCNAM)."
+		    exit 1
+		fi
 		echo "Error stopping $SRVCNAM."
-		exit 1
-	fi
-	if [ $(pidof $SRVCNAM) >/dev/null ]; then
-		echo "$SRVCNAM appears to be running without a lock file as process $(pidof $SRVCNAM)."
 		exit 1
 	fi
 	echo "$SRVCNAM does not appear to be running."
@@ -119,12 +119,17 @@ case "$1" in
     stop)
 	stop
 	;;
+    restart)
+	start
+	sleep 3
+	stop
+	;;
     status)
 	if pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then
 	    echo "$SRVCNAM running as process $(cat $PIDFILE)"
 	    exit 0
     elif [ $(pidof $SRVCNAM) >/dev/null ]; then
-	    echo "$SRVCNAM appears to be running without a lock file as process $(pidof $SRVCNAM)."
+	    echo "$SRVCNAM appears to be running without a lock file at $PIDFILE as process $(pidof $SRVCNAM)."
 		exit 1
     	else
 	    echo "$SRVCNAM is not running"
@@ -132,7 +137,7 @@ case "$1" in
 	fi
 	;;
     *)
-	echo "Usage start|stop|status"
+	echo "Usage start|stop|restart|status"
 	;;
 esac
 
