@@ -11,4 +11,4 @@ config() {
   # Otherwise, we leave the .new copy for the admin to consider...
 }
 
-config var/lib/plexwatch/plexwatch.conf
+config var/lib/plexwatch/plexwatch.conf.new
