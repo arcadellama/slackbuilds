@@ -19,12 +19,12 @@ start() {
 		echo "$SRVCNAM appears to already be running."
 		exit 1
 	fi
-	if [ $(ps -ef | grep "$SRVCNAM" | grep -v grep | wc -l) -ne 0 ]; then
+	if [ $(pgrep $SRVCNAM) >/dev/null ]; then
 		if [ -r $PIDFILE ]; then
-			echo "$SRVCNAM apears to already be running with a stale lock file at $PIDFILE."
+			echo "$SRVCNAM apears to already be running ($(pgrep $SRVCNAM)) with a stale lock file at $PIDFILE."
 			exit 1
 		fi
-		echo "$SRVCNAM appears to be running without a lock file at $PIDFILE."
+		echo "$SRVCNAM appears to be running ($(pgrep $SRVCNAM)) without a lock file."
 		exit 1
 	fi
 
@@ -48,25 +48,19 @@ start() {
 	echo "Starting $SRVCNAM:"
 	cd $DATA_DIR
 	su -m $LIDARR_USER -s /bin/bash -c \
-		"exec $DAEMON $DAEMON_OPTS &" >/dev/null 2>&1
+		"exec -a $SRVCNAM $DAEMON $DAEMON_OPTS &" >/dev/null 2>&1
 
 	# Check that it worked
-	wait=0
-	while [ $wait -le 10 ]; do
+	wait=10
+	while [ $wait -gt 0 ]; do
 		if pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then
 			echo "Success."
 			exit 0
 		fi
-		echo -n " . "
 		sleep 1
-		(( wait ++ ))
+		(( wait -- ))
 	done
 	
-	if [ $(ps -ef | grep "$SRVCNAM" | grep -v grep | wc -l) -ne 0 ]; then
-	    echo "$SRVCNAM appears to be running without a lock file at $PIDFILE."
-	    exit 1
-	fi
-
 	echo "Error starting $SRVCNAM."
 	exit 1
 
@@ -76,19 +70,17 @@ stop() {
 	if pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then
 		echo "Stopping $SRVCNAM:"
 		kill -15 $(cat $PIDFILE)
-		wait=0
-		while [ $wait -le 15 ]; do
+		wait=10
+		while [ $wait -gt 10 ]; do
 			if ! pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then
 				echo "Success."
 				exit 0
 			fi
-			echo -n " . "
 			sleep 1
-			(( wait ++ ))
+			(( wait -- ))
 		done
-		if [ $(ps -ef | grep "$SRVCNAM" | grep -v grep | wc -l) -ne 0 ]; then
-			PROCESS=$(ps -ef | grep "$SRVCNAM" | grep -v grep | awk '{print $2}')
-			echo "$SRVCNAM appears to be running without a lock file as process $PROCESS."
+		if [ $(pgrep $SRVCNAM) >/dev/null ]; then
+		    echo "$SRVCNAM appears to be running without a lock file as process $(pgrep $SRVCNAM)."
 			exit 1
 		fi
 		echo "Error stopping $SRVCNAM."
@@ -109,9 +101,8 @@ case "$1" in
 	if pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then
 	    echo "$SRVCNAM running as process $(cat $PIDFILE)"
 	    exit 0
-	elif [ $(ps -ef | grep "$SRVCNAM" | grep -v grep | wc -l) -ne 0 ]; then
-		PROCESS=$(ps -ef | grep "$SRVCNAM" | grep -v grep | awk '{print $2}')
-		echo "$SRVCNAM appears to be running without a lock file as process $PROCESS."
+	elif [ $(pgrep $SRVCNAM) ]; then
+	    echo "$SRVCNAM appears to be running without a lock file as process $(pgrep $SRVCNAM)."
 		exit 1
     	else
 	    echo "$SRVCNAM is not running"

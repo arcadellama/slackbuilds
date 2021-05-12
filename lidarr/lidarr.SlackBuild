@@ -23,7 +23,7 @@
 #  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 PRGNAM=lidarr
-VERSION=${VERSION:-3.1.1.4954}
+VERSION=${VERSION:-0.8.1.2135}
 BUILD=${BUILD:-1}
 TAG=${TAG:-_SBo}
 
@@ -49,10 +49,7 @@ set -e
 if ! getent passwd $LIDARR_USER 1>/dev/null 2>/dev/null; then
   cat << EOF
 
-  You must have a ombi user to run this script
-
-  # groupadd $LIDARR_GROUP
-  # useradd -r -d /var/lib/$PRGNAM -g $LIDARR_GROUP $LIDARR_USER
+  You must have a $LIDARR_USER user to run this script
 
 EOF
 
@@ -60,8 +57,7 @@ EOF
 elif ! getent group $LIDARR_GROUP 1>/dev/null 2>/dev/null; then
   cat << EOF
 
-  You must have a ombi group to run this script
-  # groupadd $LIDARR_GROUP
+  You must have a $LIDARR_GROUP group to run this script
 
 EOF
   exit 1

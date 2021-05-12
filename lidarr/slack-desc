@@ -6,13 +6,14 @@
 # customary to leave one space after the ':' except on otherwise blank lines.
 
       |-----handy-ruler------------------------------------------------------|
-lidarr: lidarr (Movie download automation for usenet and torrents.)
+lidarr: lidarr (a music collection manager.)
 lidarr:
-lidarr: Lidarr is a movie collection manager for Usenet and BitTorrent users.
-lidarr: It can monitor multiple RSS feeds for new movies and will interface
-lidarr: with clients and indexers to grab, sort, and rename them. It can also
-lidarr: be configured to automatically upgrade the quality of existing files
-lidarr: in the library when a better quality format becomes available.
+lidarr: Lidarr is a music collection manager for Usenet and BitTorrent users.
+lidarr: It can monitor multiple RSS feeds for new albums from your favorite
+lidarr: artists and will interface with clients and indexers to grab, sort,
+lidarr: and rename them. It can also be configured to automatically upgrade
+lidarr: the quality of existing files in the library when a better quality
+lidarr: format becomes available.lidarr:
 lidarr:
-lidarr: Homepage <https://lidarr.video>
+lidarr: Homepage <https://lidarr.audio>
 lidarr:
