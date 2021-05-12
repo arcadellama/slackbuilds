@@ -49,10 +49,7 @@ set -e
 if ! getent passwd $RADARR_USER 1>/dev/null 2>/dev/null; then
   cat << EOF
 
-  You must have a ombi user to run this script
-
-  # groupadd $RADARR_GROUP
-  # useradd -r -d /var/lib/$PRGNAM -g $RADARR_GROUP $RADARR_USER
+  You must have a $RADARR_USER user to run this script
 
 EOF
 
@@ -60,8 +57,7 @@ EOF
 elif ! getent group $RADARR_GROUP 1>/dev/null 2>/dev/null; then
   cat << EOF
 
-  You must have a ombi group to run this script
-  # groupadd $RADARR_GROUP
+  You must have a $RADARR_GROUP group to run this script
 
 EOF
   exit 1
@@ -91,6 +87,7 @@ mkdir -p $PKG/etc/rc.d
 sed -e "s/@RADARR_USER@/$RADARR_USER/g" \
     -e "s/@RADARR_GROUP@/$RADARR_GROUP/g" \
     $CWD/rc.$PRGNAM > $PKG/etc/rc.d/rc.$PRGNAM.new
+chmod 755 $PKG/etc/rc.d/rc.$PRGNAM.new
 
 find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
   | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true

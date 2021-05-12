@@ -87,6 +87,7 @@ mkdir -p $PKG/etc/rc.d
 sed -e "s/@LIDARR_USER@/$LIDARR_USER/g" \
     -e "s/@LIDARR_GROUP@/$LIDARR_GROUP/g" \
     $CWD/rc.$PRGNAM > $PKG/etc/rc.d/rc.$PRGNAM.new
+chmod 755 $PKG/etc/rc.d/rc.$PRGNAM.new
 
 find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
   | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
