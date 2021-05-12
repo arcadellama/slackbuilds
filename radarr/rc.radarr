@@ -1,7 +1,9 @@
 #!/bin/bash
 # ----------------------------------------------------------------------
+#
 # Slackware init script for Radarr:
 # /etc/rc.d/rc.radarr
+#
 # ----------------------------------------------------------------------
 
 PRGNAM=radarr
@@ -18,13 +20,15 @@ start() {
 	if pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then
 		echo "$SRVCNAM appears to already be running."
 		exit 1
-	fi
-	if [ $(ps -ef | grep "$SRVCNAM" | grep -v grep | wc -l) -ne 0 ]; then
+
+	elif [ $(pidof $SRVCNAM) >/dev/null ]; then
+
 		if [ -r $PIDFILE ]; then
-			echo "$SRVCNAM apears to already be running with a stale lock file at $PIDFILE."
+			echo "$SRVCNAM apears to already be running as service $(pidof $SRVCNAM) with a stale lock file at $PIDFILE."
 			exit 1
 		fi
-		echo "$SRVCNAM appears to be running without a lock file at $PIDFILE."
+
+		echo "$SRVCNAM appears to be running as service $(pidof $SRVCNAM) without a lock file at $PIDFILE."
 		exit 1
 	fi
 
@@ -40,32 +44,44 @@ start() {
 	# Take ownership of the working directory
 	chown -R $RADARR_USER:$RADARR_GROUP $DATA_DIR
 	if [ $? -ne 0 ]; then
-		echo "Error changing permissions to $DATA_DIR."
+		echo "Error setting ownership of $DATA_DIR."
 		exit 1
 	fi
 
 	# Start the service
-	echo "Starting $SRVCNAM:"
+	rm -f $PIDFILE
 	cd $DATA_DIR
+	echo "Starting $SRVCNAM"
 	su -m $RADARR_USER -s /bin/bash -c \
-		"exec $DAEMON $DAEMON_OPTS &" >/dev/null 2>&1
+		"exec -a $SRVCNAM $DAEMON $DAEMON_OPTS &" >/dev/null 2>&1
 
 	# Check that it worked
-	wait=0
-	while [ $wait -le 10 ]; do
+	# Use the following if service creates its own lock file
+	wait=10
+	while [ $wait -gt 0 ]; do
 		if pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then
-			echo "Success."
 			exit 0
 		fi
-		echo -n " . "
 		sleep 1
-		(( wait ++ ))
+		(( wait -- ))
 	done
 	
-	if [ $(ps -ef | grep "$SRVCNAM" | grep -v grep | wc -l) -ne 0 ]; then
-	    echo "$SRVCNAM appears to be running without a lock file at $PIDFILE."
+	if [ $(pidof $SRVCNAM) >/dev/null ]; then
+	    echo "Error: $SRVCNAM appears to be running as service $(pidof $SRVCNAM) without a lock file at $PIDFILE."
 	    exit 1
 	fi
+
+	# Use the following for services that do not create their own lock file
+	# wait=15
+	#while [ $wait -gt 0 ]; do
+	#    PID=$(pidof $SRVCNAM)
+	#    if [ $PID ]; then
+	#	echo $PID > $PIDFILE
+	#	exit 0
+	#    fi
+	#    sleep 1
+	#    (( wait -- ))
+	#done
 
 	echo "Error starting $SRVCNAM."
 	exit 1
@@ -74,22 +90,20 @@ start() {
 
 stop() {
 	if pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then
-		echo "Stopping $SRVCNAM:"
+		echo "Stopping $SRVCNAM"
 		kill -15 $(cat $PIDFILE)
-		wait=0
-		while [ $wait -le 15 ]; do
+		wait=10
+		while [ $wait -gt 0 ]; do
 			if ! pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then
-				echo "Success."
+				rm -f $PIDFILE
 				exit 0
 			fi
-			echo -n " . "
 			sleep 1
-			(( wait ++ ))
+			(( wait -- ))
 		done
-		if [ $(ps -ef | grep "$SRVCNAM" | grep -v grep | wc -l) -ne 0 ]; then
-			PROCESS=$(ps -ef | grep "$SRVCNAM" | grep -v grep | awk '{print $2}')
-			echo "$SRVCNAM appears to be running without a lock file as process $PROCESS."
-			exit 1
+		if [ $(pidof $SRVCNAM) >/dev/null ]; then
+		    echo "$SRVCNAM appears to be running without a lock file at $PIDFILE as process $(pidof $SRVCNAM)."
+		    exit 1
 		fi
 		echo "Error stopping $SRVCNAM."
 		exit 1
@@ -109,9 +123,8 @@ case "$1" in
 	if pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then
 	    echo "$SRVCNAM running as process $(cat $PIDFILE)"
 	    exit 0
-	elif [ $(ps -ef | grep "$SRVCNAM" | grep -v grep | wc -l) -ne 0 ]; then
-		PROCESS=$(ps -ef | grep "$SRVCNAM" | grep -v grep | awk '{print $2}')
-		echo "$SRVCNAM appears to be running without a lock file as process $PROCESS."
+    elif [ $(pidof $SRVCNAM) >/dev/null ]; then
+	    echo "$SRVCNAM appears to be running without a lock file at $PIDFILE as process $(pidof $SRVCNAM)."
 		exit 1
     	else
 	    echo "$SRVCNAM is not running"
