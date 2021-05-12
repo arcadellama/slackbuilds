@@ -1,0 +1,40 @@
+#!/bin/sh
+########################################################################
+# Watchdog over Plex server, keeps them alive if possible.
+########################################################################
+
+PRGNAM=plexwatch
+CONFIG=/var/lib/$PRGNAM/$PRGNAM.conf
+LOGFILE=/var/log/$PRGNAM/$PRGNAM.log
+
+exec 3>&1 4>&2
+trap 'exec 2>&4 1>&3' 0 1 2 3
+exec 1>>$LOGFILE 2>&1
+
+echo "$(date) : Running $PRGNAM..."
+
+if [ ! -e $LOGFILE ]; then
+	touch $LOGFILE
+fi
+
+if [ ! -r $CONFIG ]; then
+	echo "$(date) : No config at $CONFIG."
+	exit 1
+fi
+
+. $CONFIG
+
+for i in $PLEXAPPS; do
+	echo "$(date) : Checking $i."
+	if [ $(/etc/rc.d/rc."$i" status | grep -q 'stopped') ]; then
+		echo "$(date) : $i not running."
+		/etc/rc.d/rc.$i start
+		if $? -ne 0; then
+			echo "$(date) : Error starting $i."
+		fi
+	fi
+done
+
+echo "$(date) : $PRGNAM finished."
+
+exit 0
