@@ -4,30 +4,20 @@
 ########################################################################
 
 PRGNAM=plexwatch
-CONFIG=/var/lib/$PRGNAM/$PRGNAM.conf
-LOGFILE=/var/log/$PRGNAM/$PRGNAM.log
+LOGFILE=/var/log/$PRGNAM.log
 
 exec 3>&1 4>&2
 trap 'exec 2>&4 1>&3' 0 1 2 3
 exec 1>>$LOGFILE 2>&1
 
-echo "$(date) : Running $PRGNAM..."
+plexApps="plexmediaserver nzbget radarr sonarr lidarr ombi"
+plexPorts="32400/web 6799 7878 8989 8686 5000"
 
-if [ ! -e $LOGFILE ]; then
-	touch $LOGFILE
-fi
-
-if [ ! -r $CONFIG ]; then
-	echo "$(date) : No config at $CONFIG."
-	exit 1
-fi
-
-. $CONFIG
-
-for i in $PLEXAPPS; do
-	echo "$(date) : Checking $i."
+for i in ${!plexApps[@]}; do
+	APP=${plexApps[$i]}
+	PORT=${plexPorts[$i]}
 	if [ $(/etc/rc.d/rc."$i" status | grep -q 'stopped') ]; then
-		echo "$(date) : $i not running."
+		echo "$(date) : $i is stopped. Attempting to start."
 		/etc/rc.d/rc.$i start
 		if $? -ne 0; then
 			echo "$(date) : Error starting $i."
@@ -35,6 +25,7 @@ for i in $PLEXAPPS; do
 	fi
 done
 
-echo "$(date) : $PRGNAM finished."
+echo "$(date) : $PRGNAM complete."
 
 exit 0
+
