@@ -13,23 +13,13 @@ SERVICE_GROUP=%SERVICE_GROUP%
 DATA_DIR=""
 DAEMON=""
 DAEMON_OPTS=""
-PIDFILE=$DATA_DIR/$PRGNAM.pid
+PIDFILE=/var/run/$PRGNAM.pid
 
 start() {
 	# Check if already running
 	if pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then
 		echo "$SRVCNAM appears to already be running."
-		exit 1
-
-	elif [ $(pidof $SRVCNAM) >/dev/null ]; then
-
-		if [ -r $PIDFILE ]; then
-			echo "$SRVCNAM apears to already be running as service $(pidof $SRVCNAM) with a stale lock file at $PIDFILE."
-			exit 1
-		fi
-
-		echo "$SRVCNAM appears to be running as service $(pidof $SRVCNAM) without a lock file at $PIDFILE."
-		exit 1
+		exit 0;
 	fi
 
 	# Create working directory if it doesn't exist
@@ -56,32 +46,16 @@ start() {
 		"exec -a $SRVCNAM $DAEMON $DAEMON_OPTS &" >/dev/null 2>&1
 
 	# Check that it worked
-	# Use the following if service creates its own lock file
 	wait=10
 	while [ $wait -gt 0 ]; do
-		if pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then
+		PID=$(pidof $SRVCNAM)
+		if [ $PID ]; then
+			echo $PID > $PIDFILE
 			exit 0
 		fi
 		sleep 1
 		(( wait -- ))
 	done
-	
-	if [ $(pidof $SRVCNAM) >/dev/null ]; then
-	    echo "Error: $SRVCNAM appears to be running as service $(pidof $SRVCNAM) without a lock file at $PIDFILE."
-	    exit 1
-	fi
-
-	# Use the following for services that do not create their own lock file
-	# wait=15
-	#while [ $wait -gt 0 ]; do
-	#    PID=$(pidof $SRVCNAM)
-	#    if [ $PID ]; then
-	#	echo $PID > $PIDFILE
-	#	exit 0
-	#    fi
-	#    sleep 1
-	#    (( wait -- ))
-	#done
 
 	echo "Error starting $SRVCNAM."
 	exit 1
@@ -89,26 +63,24 @@ start() {
 }
 
 stop() {
-	if pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then
-		echo "Stopping $SRVCNAM"
-		kill -15 $(cat $PIDFILE)
-		wait=10
-		while [ $wait -gt 0 ]; do
-			if ! pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then
-				rm -f $PIDFILE
-				exit 0
-			fi
-			sleep 1
-			(( wait -- ))
-		done
-		if [ $(pidof $SRVCNAM) >/dev/null ]; then
-		    echo "$SRVCNAM appears to be running without a lock file at $PIDFILE as process $(pidof $SRVCNAM)."
-		    exit 1
-		fi
-		echo "Error stopping $SRVCNAM."
+	if ! pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then
+		echo "$SRVCNAM does not appear to be running."
 		exit 1
 	fi
-	echo "$SRVCNAM does not appear to be running."
+
+	echo "Stopping $SRVCNAM"
+	kill -15 $(cat $PIDFILE)
+	wait=10
+	while [ $wait -gt 0 ]; do
+		if ! pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then
+			rm -f $PIDFILE
+			exit 0
+		fi
+		sleep 1
+		(( wait -- ))
+	done
+
+	echo "Error stopping $SRVCNAM."
 	exit 1
 }
 
@@ -119,25 +91,15 @@ case "$1" in
     stop)
 	stop
 	;;
-    restart)
-	start
-	sleep 3
-	stop
-	;;
     status)
 	if pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then
 	    echo "$SRVCNAM running as process $(cat $PIDFILE)"
-	    exit 0
-    elif [ $(pidof $SRVCNAM) >/dev/null ]; then
-	    echo "$SRVCNAM appears to be running without a lock file at $PIDFILE as process $(pidof $SRVCNAM)."
-		exit 1
     	else
-	    echo "$SRVCNAM is not running"
-	    exit 1
+	    echo "$SRVCNAM is stopped."
 	fi
 	;;
     *)
-	echo "Usage start|stop|restart|status"
+	echo "Usage start|stop|status"
 	;;
 esac
 
