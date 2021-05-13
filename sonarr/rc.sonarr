@@ -111,7 +111,7 @@ case "$1" in
 		echo "$SRVCNAM appears to be running without a lock file as process $PROCESS."
 		exit 1
     	else
-	    echo "$SRVCNAM is not running"
+	    echo "$SRVCNAM is stopped."
 	    exit 1
 	fi
 	;;
