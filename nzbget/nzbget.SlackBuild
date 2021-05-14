@@ -35,9 +35,6 @@ if [ -z "$ARCH" ]; then
   esac
 fi
 
-NZBGET_USER=${NZBGET_USER:-nzbget}
-NZBGET_GROUP=${NZBGET_GROUP:-nzbget}
-
 CWD=$(pwd)
 TMP=${TMP:-/tmp/SBo}
 PKG=$TMP/package-$PRGNAM
@@ -58,28 +55,6 @@ else
 fi
 
 set -e
-
-# Bail if user or group isn't valid on your system
-if ! getent passwd $NZBGET_USER 1>/dev/null 2>/dev/null; then
-  cat << EOF
-
-  You must have a $NZBGET_USER to run this script
-
-  # groupadd $NZBGET_GROUP
-  # useradd -u $NZBGET_USER -d /var/lib/$PRGNAM -g $NZBGET_GROUP $NZBGET_USER
-
-EOF
-  exit 1
-
-elif ! getent group $NZBGET_GROUP 1>/dev/null 2>/dev/null; then
-  cat << EOF
-
-  You must have a $NZBGET_GROUP group to run this script
-  # groupadd -g $NZBGET_GROUP plex
-
-EOF
-  exit 1
-fi
 
 rm -rf $PKG
 mkdir -p $TMP $PKG $OUTPUT
@@ -115,12 +90,12 @@ find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | gr
   | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
 
 mkdir -p $PKG/var/lib/$PRGNAM
-sed -e "s|CertStore=.*|CertStore=/etc/ssl/ca-certificates.crt|g" $PKG/etc/$PRGNAM.conf > $PKG/var/lib/$PRGNAM/$PRGNAM.conf.new
+sed -e "s|CertStore=.*|CertStore=/etc/ssl/ca-certificates.crt|g" \
+	$PKG/etc/$PRGNAM.conf > $PKG/var/lib/$PRGNAM/$PRGNAM.conf.new
 mv $PKG/etc/$PRGNAM.conf $PKG/etc/$PRGNAM.conf.new
 
 mkdir -p $PKG/etc/rc.d
-sed -e "s/@NZBGET_USER@/${NZBGET_USER}/g" -e "s/@NZBGET_GROUP@/${NZBGET_GROUP}/g" $CWD/rc.$PRGNAM > $PKG/etc/rc.d/rc.$PRGNAM.new
-chmod 755 $PKG/etc/rc.d/rc.$PRGNAM.new
+mv $CWD/rc.$PRGNAM $PKG/etc/rc.d/rc.$PRGNAM.new
 
 mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
 cp -a \
