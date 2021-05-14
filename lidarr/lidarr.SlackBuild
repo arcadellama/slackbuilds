@@ -35,33 +35,12 @@ if [ -z "$ARCH" ]; then
   esac
 fi
 
-LIDARR_USER=${LIDARR_USER:-lidarr}
-LIDARR_GROUP=${LIDARR_GROUP:-lidarr}
-
 CWD=$(pwd)
 TMP=${TMP:-/tmp/SBo}
 PKG=$TMP/package-$PRGNAM
 OUTPUT=${OUTPUT:-/tmp}
 
 set -e
-
-# Bail if user or group isn't valid on your system
-if ! getent passwd $LIDARR_USER 1>/dev/null 2>/dev/null; then
-  cat << EOF
-
-  You must have a $LIDARR_USER user to run this script
-
-EOF
-
-  exit 1
-elif ! getent group $LIDARR_GROUP 1>/dev/null 2>/dev/null; then
-  cat << EOF
-
-  You must have a $LIDARR_GROUP group to run this script
-
-EOF
-  exit 1
-fi
 
 rm -rf $PKG
 mkdir -p $TMP $PKG $OUTPUT
@@ -84,10 +63,7 @@ cp -a $CWD/package_info $PKG/usr/lib/$PRGNAM/package_info
 echo "PackageVersion=$VERSION-$ARCH-$BUILD$TAG" >> $PKG/usr/lib/$PRGNAM/package_info
 
 mkdir -p $PKG/etc/rc.d
-sed -e "s/@LIDARR_USER@/$LIDARR_USER/g" \
-    -e "s/@LIDARR_GROUP@/$LIDARR_GROUP/g" \
-    $CWD/rc.$PRGNAM > $PKG/etc/rc.d/rc.$PRGNAM.new
-chmod 755 $PKG/etc/rc.d/rc.$PRGNAM.new
+mv $CWD/rc.$PRGNAM $PKG/etc/rc.d/rc.$PRGNAM.new
 
 find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
   | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
@@ -97,6 +73,7 @@ cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
 
 mkdir -p $PKG/install
 cat $CWD/slack-desc > $PKG/install/slack-desc
+cat $CWD/doinst.sh > $PKG/install/doinst.sh
 
 cd $PKG
 /sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}

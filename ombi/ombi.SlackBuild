@@ -27,8 +27,13 @@ VERSION=${VERSION:-4.0.1342}
 BUILD=${BUILD:-1}
 TAG=${TAG:-_SBo}
 
-OMBI_USER=${OMBI_USER:-ombi}
-OMBI_GROUP=${OMBI_GROUOP:-ombi}
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i586 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
 
 CWD=$(pwd)
 TMP=${TMP:-/tmp/SBo}
@@ -36,28 +41,6 @@ PKG=$TMP/package-$PRGNAM
 OUTPUT=${OUTPUT:-/tmp}
 
 set -e
-
-# Bail if user or group isn't valid on your system
-if ! getent passwd $OMBI_USER 1>/dev/null 2>/dev/null; then
-  cat << EOF
-
-  You must have a ombi user to run this script
-
-  # groupadd $OMBI_GROUP
-  # useradd -r -d /var/lib/$PRGNAM -s /bin/false -g $OMBI_GROUP $OMBI_USER
-
-EOF
-
-  exit 1
-elif ! getent group $OMBI_GROUP 1>/dev/null 2>/dev/null; then
-  cat << EOF
-
-  You must have a ombi group to run this script
-  # groupadd $OMBI_GROUP
-
-EOF
-  exit 1
-fi
 
 rm -rf $PKG
 mkdir -p $TMP $PKG $OUTPUT
@@ -79,13 +62,11 @@ chmod 755 $PKG/usr/lib/$PRGNAM/${PRGNAM^}
 
 mkdir -p $PKG/var/lib/$PRGNAM
 cp -a appsettings.json $PKG/var/lib/$PRGNAM/appsettings.json.new
-cp -a ClientApp $PKG/var/lib/$PRGNAM
+cp -a ClientApp wwwroot $PKG/var/lib/$PRGNAM
 chown -R $OMBI_USER:$OMBI_GROUP $PKG/var/lib/$PRGNAM
 
 mkdir -p $PKG/etc/rc.d
-sed -e "s/@OMBI_USER@/${OMBI_USER}/g" \
-    -e "s/@OMBI_GROUP@/${OMBI_GROUP}/g" \
-    $CWD/rc.ombi > $PKG/etc/rc.d/rc.ombi.new
+mv $CWD/rc.ombi $PKG/etc/rc.d/rc.ombi.new
 
 mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
 cp -a $CWD/README $PKG/usr/doc/$PRGNAM-$VERSION/README

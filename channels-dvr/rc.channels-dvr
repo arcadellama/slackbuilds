@@ -8,8 +8,8 @@
 
 PRGNAM=channels-dvr
 SRVCNAM=Channels-DVR
-CHANNELS_DVR_USER=@CHANNELS_DVR_USER@
-CHANNELS_DVR_GROUP=@CHANNELS_DVR_GROUP@
+CHANNELS_DVR_USER=channels-dvr
+CHANNELS_DVR_GROUP=channels-dvr
 DATA_DIR="/var/lib/$PRGNAM/data"
 DAEMON="/usr/lib/$PRGNAM/latest/$PRGNAM"
 DAEMON_OPTS=""
@@ -21,15 +21,6 @@ start() {
 		echo "$SRVCNAM appears to already be running."
 		exit 1
 
-	    elif [ $(pidof $SRVCNAM) >/dev/null ]; then
-
-		if [ -r $PIDFILE ]; then
-			echo "$SRVCNAM apears to already be running with a stale lock file at $PIDFILE."
-			exit 1
-		fi
-
-		echo "$SRVCNAM appears to be running without a lock file at $PIDFILE."
-		exit 1
 	fi
 
 	# Create working directory if it doesn't exist
@@ -90,11 +81,8 @@ stop() {
 		echo "Error stopping $SRVCNAM."
 		exit 1
 	fi
-	if [ $(pidof $SRVCNAM) >/dev/null ]; then
-	    echo "$SRVCNAM appears to be running without a lock file as process $(pidof $SRVCNAM)."
-		exit 1
-	fi
-	echo "$SRVCNAM does not appear to be running."
+
+	echo "$SRVCNAM is stopped."
 }
 
 case "$1" in
@@ -107,11 +95,8 @@ case "$1" in
     status)
 	if pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then
 	    echo "$SRVCNAM running as process $(cat $PIDFILE)"
-	elif [ $(pidof $SRVCNAM) >/dev/null ]; then
-	    echo "$SRVCNAM appears to be running without a lock file as process $(pidof $SRVCNAM)."
-		exit 1
     	else
-	    echo "$SRVCNAM is not running"
+	    echo "$SRVCNAM is stopped."
 	fi
 	;;
     *)

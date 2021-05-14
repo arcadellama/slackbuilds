@@ -35,37 +35,12 @@ if [ -z "$ARCH" ]; then
   esac
 fi
 
-CHANNELS_DVR_USER=${CHANNELS_DVR_USER:-channels-dvr}
-CHANNELS_DVR_GROUP=${CHANNELS_DVR_GROUOP:-channels-dvr}
-
 CWD=$(pwd)
 TMP=${TMP:-/tmp/SBo}
 PKG=$TMP/package-$PRGNAM
 OUTPUT=${OUTPUT:-/tmp}
 
 set -e
-
-# Bail if user or group isn't valid on your system
-if ! getent passwd $CHANNELS_DVR_USER 1>/dev/null 2>/dev/null; then
-  cat << EOF
-
-  You must have a channels-dvr user to run this script
-
-  # groupadd $CHANNELS_DVR_GROUP
-  # useradd -r -d /var/lib/$PRGNAM -s /bin/false -g $CHANNELS_DVR_GROUP $CHANNELS_DVR_USER
-
-EOF
-
-  exit 1
-elif ! getent group $CHANNELS_DVR_GROUP 1>/dev/null 2>/dev/null; then
-  cat << EOF
-
-  You must have a channels-dvr group to run this script
-  # groupadd $CHANNELS_DVR_GROUP
-
-EOF
-  exit 1
-fi
 
 rm -rf $PKG
 mkdir -p $TMP $PKG $OUTPUT
@@ -90,13 +65,9 @@ mkdir -p $PKG/usr/lib/$PRGNAM/$VERSION
 cp -a * $PKG/usr/lib/$PRGNAM/$VERSION
 
 mkdir -p $PKG/var/lib/$PRGNAM $PKG/var/lib/$PRGNAM/data
-chown -R $CHANNELS_DVR_USER:$CHANNELS_DVR_GROUP $PKG/var/lib/$PRGNAM
 
 mkdir -p $PKG/etc/rc.d
-sed -e "s/@CHANNELS_DVR_USER@/${CHANNELS_DVR_USER}/g" \
-    -e "s/@CHANNELS_DVR_GROUP@/${CHANNELS_DVR_GROUP}/g" \
-    $CWD/rc.channels-dvr > $PKG/etc/rc.d/rc.channels-dvr.new
-chmod 755 $PKG/etc/rc.d/rc.channels-dvr.new
+mv $CWD/rc.channels-dvr $PKG/etc/rc.d/rc.channels-dvr.new
 
 ( pushd $PKG/usr/lib/$PRGNAM; ln -nsf /usr/lib/$PRGNAM/$VERSION latest; popd )
 

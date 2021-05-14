@@ -1,13 +1,6 @@
 Ombi is your friendly media request tool, automatically syncs with
 your media with your media servers!
 
-You'll need to create a ombi user in order to run with the provided init
+You'll want to create a ombi user in order to run with the provided init
 script:
-
-# groupadd ombi
-# useradd -r -d /var/lib/ombi -g ombi ombi
-
-Optionally change these by:
-
-OMBI_USER=user OMBI_GROUP=group ./ombi.Slackbuild
 

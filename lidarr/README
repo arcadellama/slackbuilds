@@ -3,7 +3,3 @@ Lidarr is a music collection manager for Usenet and BitTorrent users. It can mon
 You'll want to create a lidarr user in order to run with the provided init
 script.
 
-You can change this by passing:
-
-  $LIDARR_USER=user $LIDARR_GROUP=user ./lidarr.SlackBuild
-

@@ -4,12 +4,5 @@ available. Simply install Channels DVR Server on a device and Channels
 will magically see it from any TV or device you own. 
 
 You'll need to create a channels-dvr user in order to run with the
-provided init script:
-
-# groupadd channels-dvr
-# useradd -r -d /var/lib/channels-dvr -g channels-dvr channels-dvr
-
-Optionally change these by:
-
-CHANNELS_DVR_USER=user CHANNELS_DVR_GROUP=group ./channels-dvr.Slackbuild
+provided init script.
 

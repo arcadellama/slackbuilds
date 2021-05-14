@@ -6,12 +6,5 @@ existing files in the library when a better quality format becomes
 available.
 
 You'll want to create a radarr user in order to run with the provided init
-script:
-
-  # groupadd radarr
-  # useradd -r -d /var/lib/radarr -g radarr radarr
-
-You can change this by passing:
-
-  $RADARR_USER=user $RADARR_GROUP=user ./radarr.SlackBuild
+script.
 
