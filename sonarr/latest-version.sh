@@ -1,5 +1,5 @@
-#!/bin/sh
-PRGNAM=sonarr
+#!/bin/bash
+PRGNAM=$(basename $PWD)
 
 set -e
 
@@ -10,24 +10,36 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-if [ -f $PWD/$PRGNAM.info ]; then
-    . $PWD/$PRGNAM.info
+if [ -f $PRGNAM.info ]; then
+    . $PRGNAM.info
     else
 	echo "Cannot find $PRGNAM.info"
 	exit 1
 fi
 
 update () {
-    sed -i "s|${VERSION}|${LATEST_VERSION}|g" $PWD/$PRGNAM.* 
+    sed -i "s|${VERSION}|${LATEST_VERSION}|g" $PRGNAM.* 
+    . $PRGNAM.info
 
-    if [ ! -z $DOWNLOAD ]; then
-	NEW_MD5SUM=$(curl -sL $DOWNLOAD | md5sum | cut -d ' ' -f 1)
-	sed -i 's/MD5SUM=.*/MD5SUM="'"$NEW_MD5SUM"'"/1' $PWD/$PRGNAM.info
+    if [ "$DOWNLOAD" ]; then
+	DL_ARRAY=($DOWNLOAD)
+	OLDMD5=($MD5SUM)
+	for i in "${!DL_ARRAY[@]}"; do
+		NEWMD5=$(curl -sL ${DL_ARRAY[$i]} | md5sum | cut -d ' ' -f 1)
+		echo "i is $i"
+		echo "DL_ARRAY is ${DL_ARRAY[$i]}"
+		echo "OLDMD5 is ${OLDMD5[$i]} and NEWMD5 is $NEWMD5"
+		sed -i "s|${OLDMD5[$i]}|${NEWMD5}|g" $PRGNAM.* 
+	done
     fi
 
-    if [ ! -z $DOWNLOAD_x86_64 ]; then
-	NEW_MD5SUM_x86_64=$(curl -sL $DOWNLOAD_x86_64 | md5sum | cut -d ' ' -f 1)
-	sed -i 's/MD5SUM_x86_64=.*/MD5SUM_x86_64="'"$NEW_MD5SUM_x86_64"'"/1' $PWD/$PRGNAM.info
+    if [ "$DOWNLOAD_x86_64" ]; then
+	DL_ARRAY=($DOWNLOAD_x86_64)
+	OLDMD5=($MD5SUM_x86_64)
+	for i in "${!DL_ARRAY[@]}"; do
+		NEWMD5=$(curl -sL ${DL_ARRAY[$i]} | md5sum | cut -d ' ' -f 1)
+		sed -i "s|${OLDMD5[$i]}}|${NEWMD5}|g" $PRGNAM.* 
+	done
     fi
 
 }
