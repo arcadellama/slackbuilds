@@ -3,6 +3,12 @@ PRGNAM=$(basename $PWD)
 
 set -e
 
+#if [ "$1" ]; then
+#    LATEST_VERSION="$1"
+#else
+#    echo "Usage: latest-version.sh VERSION"
+#fi
+
 LATEST_VERSION=$(curl -s services.sonarr.tv/v1/download/latetst?version=3 | grep -oP '"version": *\K"[^"]*"' | sed 's/"//g')
 
 if [ $? -ne 0 ]; then
@@ -18,6 +24,8 @@ if [ -f $PRGNAM.info ]; then
 fi
 
 update () {
+    cat $PRGNAM.info > $PRGNAM.info.old
+    cat $PRGNAM.SlackBuild > $PRGNAM.SlackBuild.old
     sed -i "s|${VERSION}|${LATEST_VERSION}|g" $PRGNAM.* 
     . $PRGNAM.info
 
@@ -26,9 +34,10 @@ update () {
 	OLDMD5=($MD5SUM)
 	for i in "${!DL_ARRAY[@]}"; do
 		NEWMD5=$(curl -sL ${DL_ARRAY[$i]} | md5sum | cut -d ' ' -f 1)
-		echo "i is $i"
-		echo "DL_ARRAY is ${DL_ARRAY[$i]}"
-		echo "OLDMD5 is ${OLDMD5[$i]} and NEWMD5 is $NEWMD5"
+		if [ $? -ne 0 ]; then
+		    echo "Error downloading ${DL_ARRAY[$i]}"
+		    exit 1
+		fi
 		sed -i "s|${OLDMD5[$i]}|${NEWMD5}|g" $PRGNAM.* 
 	done
     fi
@@ -38,7 +47,11 @@ update () {
 	OLDMD5=($MD5SUM_x86_64)
 	for i in "${!DL_ARRAY[@]}"; do
 		NEWMD5=$(curl -sL ${DL_ARRAY[$i]} | md5sum | cut -d ' ' -f 1)
-		sed -i "s|${OLDMD5[$i]}}|${NEWMD5}|g" $PRGNAM.* 
+		if [ $? -ne 0 ]; then
+		    echo "Error downloading ${DL_ARRAY[$i]}"
+		    exit 1
+		fi
+		sed -i "s|${OLDMD5[$i]}|${NEWMD5}|g" $PRGNAM.* 
 	done
     fi
 
