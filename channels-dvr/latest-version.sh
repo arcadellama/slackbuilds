@@ -1,23 +1,60 @@
-#!/bin/sh
-PRGNAM=channels-dvr
+#!/bin/bash
+PRGNAM=$(basename $PWD)
 
 set -e
 
+#if [ "$1" ]; then
+#    LATEST_VERSION="$1"
+#else
+#    echo "Usage: latest-version.sh VERSION"
+#fi
+
 LATEST_VERSION=$(wget -qO - https://channels-dvr.s3.amazonaws.com/latest.txt)
+
 if [ $? -ne 0 ]; then
     echo "Error getting latest version."
     exit 1
 fi
 
-if [ -f $PWD/$PRGNAM.info ]; then
-    . $PWD/$PRGNAM.info
+if [ -f $PRGNAM.info ]; then
+    . $PRGNAM.info
     else
 	echo "Cannot find $PRGNAM.info"
 	exit 1
 fi
 
 update () {
-    sed -i "s|${VERSION}|${LATEST_VERSION}|g" $PWD/$PRGNAM.* 
+    cat $PRGNAM.info > $PRGNAM.info.old
+    cat $PRGNAM.SlackBuild > $PRGNAM.SlackBuild.old
+    sed -i "s|${VERSION}|${LATEST_VERSION}|g" $PRGNAM.* 
+    . $PRGNAM.info
+
+    if [ "$DOWNLOAD" ]; then
+	DL_ARRAY=($DOWNLOAD)
+	OLDMD5=($MD5SUM)
+	for i in "${!DL_ARRAY[@]}"; do
+		NEWMD5=$(curl -sL ${DL_ARRAY[$i]} | md5sum | cut -d ' ' -f 1)
+		if [ $? -ne 0 ]; then
+		    echo "Error downloading ${DL_ARRAY[$i]}"
+		    exit 1
+		fi
+		sed -i "s|${OLDMD5[$i]}|${NEWMD5}|g" $PRGNAM.* 
+	done
+    fi
+
+    if [ "$DOWNLOAD_x86_64" ]; then
+	DL_ARRAY=($DOWNLOAD_x86_64)
+	OLDMD5=($MD5SUM_x86_64)
+	for i in "${!DL_ARRAY[@]}"; do
+		NEWMD5=$(curl -sL ${DL_ARRAY[$i]} | md5sum | cut -d ' ' -f 1)
+		if [ $? -ne 0 ]; then
+		    echo "Error downloading ${DL_ARRAY[$i]}"
+		    exit 1
+		fi
+		sed -i "s|${OLDMD5[$i]}|${NEWMD5}|g" $PRGNAM.* 
+	done
+    fi
+
 }
 
 prompt () {
@@ -25,7 +62,6 @@ prompt () {
     case $confirm in
         [Yy]* )
 	    update
-	    exit 0
 	    ;;
 	[Nn]* )
 	    exit 0
