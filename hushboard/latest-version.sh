@@ -4,15 +4,15 @@ PRGNAM=$(basename $PWD)
 set -e
 
 # Enter latest version manually
-if [ "$1" ]; then
-    LATEST_VERSION="$1"
-else
-    echo "Usage: latest-version.sh VERSION"
-fi
+#if [ "$1" ]; then
+#    LATEST_VERSION="$1"
+#else
+#    echo "Usage: latest-version.sh VERSION"
+#fi
 
 # Get latest version automatically
-#LATEST_VERSION=$(curl -s https://api.github.com/repos/Radarr/Radarr/releases/latest \
-#    | grep -Po '"tag_name": "\K.*?(?=")' | sed -e 's/v//1')
+LATEST_VERSION=$(git ls-remote https://github.com/stuartlangridge/hushboard main | \
+	awk '{print $1}')
 
 if [ $? -ne 0 ]; then
     echo "Error getting latest version."
@@ -76,9 +76,9 @@ prompt () {
     esac
 }
 
-if [ $LATEST_VERSION != $VERSION ]; then
+if [ "$LATEST_VERSION" != "$VERSION" ]; then
     prompt
-elif [ $LATEST_VERSION = $VERSION ]; then
+elif [ "$LATEST_VERSION" = "$VERSION" ]; then
     echo "$PRGNAM is at latest version ($VERSION)."
     exit 0
 else

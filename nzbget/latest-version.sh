@@ -1,5 +1,5 @@
 #!/bin/bash
-PRGNAM="victor-mono-fonts"
+PRGNAM=$(basename $PWD)
 
 set -e
 
@@ -11,7 +11,7 @@ set -e
 #fi
 
 # Get latest version automatically
-LATEST_VERSION=$(curl -s https://api.github.com/repos/rubjo/victor-mono/releases/latest \
+LATEST_VERSION=$(curl -s https://api.github.com/repos/nzbget/nzbget/releases/latest \
     | grep -Po '"tag_name": "\K.*?(?=")' | sed -e 's/v//1')
 
 if [ $? -ne 0 ]; then

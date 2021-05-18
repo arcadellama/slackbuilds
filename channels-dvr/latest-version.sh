@@ -26,7 +26,7 @@ fi
 update () {
     cat $PRGNAM.info > $PRGNAM.info.old
     cat $PRGNAM.SlackBuild > $PRGNAM.SlackBuild.old
-    sed -i "s|${VERSION}|${LATEST_VERSION}|g" $PRGNAM.* 
+    sed -i "s|${VERSION}|${LATEST_VERSION}|g" $PRGNAM.{info,SlackBuild} 
     . $PRGNAM.info
 
     if [ "$DOWNLOAD" ]; then
@@ -38,7 +38,7 @@ update () {
 		    echo "Error downloading ${DL_ARRAY[$i]}"
 		    exit 1
 		fi
-		sed -i "s|${OLDMD5[$i]}|${NEWMD5}|g" $PRGNAM.* 
+		sed -i "s|${OLDMD5[$i]}|${NEWMD5}|g" $PRGNAM.info 
 	done
     fi
 
@@ -51,7 +51,7 @@ update () {
 		    echo "Error downloading ${DL_ARRAY[$i]}"
 		    exit 1
 		fi
-		sed -i "s|${OLDMD5[$i]}|${NEWMD5}|g" $PRGNAM.* 
+		sed -i "s|${OLDMD5[$i]}|${NEWMD5}|g" $PRGNAM.info 
 	done
     fi
 
