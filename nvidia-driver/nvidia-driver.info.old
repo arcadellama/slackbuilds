@@ -1,0 +1,20 @@
+PRGNAM="nvidia-driver"
+VERSION="460.80"
+HOMEPAGE="http://www.nvidia.com"
+DOWNLOAD="UNSUPPORTED"
+MD5SUM=""
+DOWNLOAD_x86_64="https://download.nvidia.com/XFree86/Linux-x86_64/460.80/NVIDIA-Linux-x86_64-460.80.run \
+                 https://download.nvidia.com/XFree86/nvidia-installer/nvidia-installer-460.80.tar.bz2 \
+                 https://download.nvidia.com/XFree86/nvidia-modprobe/nvidia-modprobe-460.80.tar.bz2 \
+                 https://download.nvidia.com/XFree86/nvidia-persistenced/nvidia-persistenced-460.80.tar.bz2 \
+                 https://download.nvidia.com/XFree86/nvidia-settings/nvidia-settings-460.80.tar.bz2 \
+                 https://download.nvidia.com/XFree86/nvidia-xconfig/nvidia-xconfig-460.80.tar.bz2"
+MD5SUM_x86_64="553ad149e44267f77374665e5ad96851 \
+               100094a58d29c7b19aa723266624127f \
+               19b7f092119b829eb5d7e003072b8307 \
+               f176fb5acb02811a614e01381a64e948 \
+               43df45efd86d3e51dda98eafdefa3288 \
+               6e1c3cec295973d58d7f50bf9897ad83"
+REQUIRES="nvidia-kernel"
+MAINTAINER="Lenard Spencer"
+EMAIL="lenardrspencer@gmail.com"

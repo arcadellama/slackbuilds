@@ -4,16 +4,15 @@ PRGNAM=$(basename $PWD)
 set -e
 
 # Enter latest version manually
-if [ "$1" ]; then
-    LATEST_VERSION="$1"
-else
-    echo "Usage: latest-version.sh VERSION"
-    exit 1
-fi
+#if [ "$1" ]; then
+#    LATEST_VERSION="$1"
+#else
+#    echo "Usage: latest-version.sh VERSION"
+#    exit 1
+#fi
 
 # Get latest version automatically
-#LATEST_VERSION=$(curl -s https://api.github.com/repos/Radarr/Radarr/releases/latest \
-#    | grep -Po '"tag_name": "\K.*?(?=")' | sed -e 's/v//1')
+LATEST_VERSION=$(curl -s https://api.github.com/repos/nvidia/nvidia-persistenced/tags | grep -Po -m 1 '"name": "\K.*?(?=")' | sed -e 's/v//1')
 
 if [ $? -ne 0 ]; then
     echo "Error getting latest version."
