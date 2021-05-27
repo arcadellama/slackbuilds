@@ -3,13 +3,18 @@ PRGNAM=$(basename $PWD)
 
 set -e
 
+# Enter latest version manually
 #if [ "$1" ]; then
 #    LATEST_VERSION="$1"
 #else
 #    echo "Usage: latest-version.sh VERSION"
+#    exit 1
 #fi
 
-LATEST_VERSION=$(wget -qO - https://channels-dvr.s3.amazonaws.com/latest.txt)
+# Get latest version automatically
+LATEST_VERSION=$(wget -qO - \
+	https://channels-dvr.s3.amazonaws.com/latest.txt \
+	| grep -Po '"tag_name": "\K.*?(?=")' | sed -e 's/v//1')
 
 if [ $? -ne 0 ]; then
     echo "Error getting latest version."
@@ -29,7 +34,7 @@ update () {
     sed -i "s|${VERSION}|${LATEST_VERSION}|g" $PRGNAM.{info,SlackBuild} 
     . $PRGNAM.info
 
-    if [ "$DOWNLOAD" ]; then
+    if [ "$MD5SUM" ]; then
 	DL_ARRAY=($DOWNLOAD)
 	OLDMD5=($MD5SUM)
 	for i in "${!DL_ARRAY[@]}"; do
@@ -42,7 +47,7 @@ update () {
 	done
     fi
 
-    if [ "$DOWNLOAD_x86_64" ]; then
+    if [ "$MD5SUM_x86_64" ]; then
 	DL_ARRAY=($DOWNLOAD_x86_64)
 	OLDMD5=($MD5SUM_x86_64)
 	for i in "${!DL_ARRAY[@]}"; do
@@ -73,9 +78,9 @@ prompt () {
     esac
 }
 
-if [ $LATEST_VERSION != $VERSION ]; then
+if [ "$LATEST_VERSION" != "$VERSION" ]; then
     prompt
-elif [ $LATEST_VERSION = $VERSION ]; then
+elif [ "$LATEST_VERSION" == "$VERSION" ]; then
     echo "$PRGNAM is at latest version ($VERSION)."
     exit 0
 else
