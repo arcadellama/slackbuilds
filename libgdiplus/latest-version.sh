@@ -1,22 +1,24 @@
 #!/bin/bash
+LOCKFILE=$HOME/.local/share/slackbuilds-latest-version/sblv.lock
 PRGNAM=$(basename $PWD)
+ONLINEVERSION=""
+# Example
+#ONLINEVERSION=$(curl -s https://api.github.com/repos/Radarr/Radarr/releases/latest \
+#    | grep -Po '"tag_name": "\K.*?(?=")' | sed -e 's/v//1')
 
 set -e
 
-# Enter latest version manually
-#if [ "$1" ]; then
-#    LATEST_VERSION="$1"
-#else
-#    echo "Usage: latest-version.sh VERSION"
-#    exit 1
-#fi
-
-# Get latest version automatically
-LATEST_VERSION=$(wget -qO - \
-	https://channels-dvr.s3.amazonaws.com/latest.txt)
-
-if [ $? -ne 0 ]; then
-    echo "Error getting latest version."
+if [ "$1" ]; then
+    LATEST_VERSION="$1"
+elif
+   [ "$ONLINEVERSION" ]; then
+    LATEST_VERSION="$ONLINEVERSION"
+elif
+   [ -e "$LOCKFILE" ]; then
+    echo "Skipping $PRGNAM"
+    exit 0
+else
+    echo "Usage: latest-version.sh VERSION"
     exit 1
 fi
 
@@ -38,10 +40,6 @@ update () {
 	OLDMD5=($MD5SUM)
 	for i in "${!DL_ARRAY[@]}"; do
 		NEWMD5=$(curl -sL ${DL_ARRAY[$i]} | md5sum | cut -d ' ' -f 1)
-		if [ $? -ne 0 ]; then
-		    echo "Error downloading ${DL_ARRAY[$i]}"
-		    exit 1
-		fi
 		sed -i "s|${OLDMD5[$i]}|${NEWMD5}|g" $PRGNAM.info 
 	done
     fi
@@ -51,10 +49,6 @@ update () {
 	OLDMD5=($MD5SUM_x86_64)
 	for i in "${!DL_ARRAY[@]}"; do
 		NEWMD5=$(curl -sL ${DL_ARRAY[$i]} | md5sum | cut -d ' ' -f 1)
-		if [ $? -ne 0 ]; then
-		    echo "Error downloading ${DL_ARRAY[$i]}"
-		    exit 1
-		fi
 		sed -i "s|${OLDMD5[$i]}|${NEWMD5}|g" $PRGNAM.info 
 	done
     fi

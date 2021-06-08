@@ -1,11 +1,18 @@
 PRGNAM="channels-dvr"
-VERSION="2021.03.30.0356"
+VERSION="2021.05.26.1807"
 HOMEPAGE="https://getchannels.com"
 DOWNLOAD="UNSUPPORTED"
 MD5SUM=""
-DOWNLOAD_x86_64="https://channels-dvr.s3.amazonaws.com/2021.03.30.0356/ffmpeg-linux-x86_64 \
-https://channels-dvr.s3.amazonaws.com/2021.03.30.0356/ffprobe-linux-x86_64 https://channels-dvr.s3.amazonaws.com/2021.03.30.0356/comskip-linux-x86_64 https://channels-dvr.s3.amazonaws.com/2021.03.30.0356/channels-dvr-linux-x86_64 https://channels-dvr.s3.amazonaws.com/2021.03.30.0356/ffmpeg-dl-linux-x86_64"
-MD5SUM_x86_64="e1d6e17b515c3f1a479666c9d663f773 eb25ea7629eebc3926377d87fbf8fde0 6aca5b23a483849f33964d78c8ec0946 55b33be4d1fe51ce0dcde2bf4bc49ab7 9073a03c450ae5f5d276fbe90d98f6bd"
+DOWNLOAD_x86_64="https://channels-dvr.s3.amazonaws.com/2021.05.26.1807/ffmpeg-linux-x86_64 \
+https://channels-dvr.s3.amazonaws.com/2021.05.26.1807/ffprobe-linux-x86_64 \
+https://channels-dvr.s3.amazonaws.com/2021.05.26.1807/comskip-linux-x86_64 \
+https://channels-dvr.s3.amazonaws.com/2021.05.26.1807/channels-dvr-linux-x86_64 \
+https://channels-dvr.s3.amazonaws.com/2021.05.26.1807/ffmpeg-dl-linux-x86_64"
+MD5SUM_x86_64="ab533fffc02cc0c0c3220d60d1a65f91 \
+a6b276e8cb8ec0b9df4125251bc2c3ae \
+95be1a6861a5e9a5edbea7a8108eebd4 \
+cb792088c712ae6cf801741ef53a8e14 \
+ab58d0444a9b16f4c00f1d24d8f4bccd"
 REQUIRES=""
 MAINTAINER="Justin Teague"
 EMAIL="arcadellama@posteo.net"

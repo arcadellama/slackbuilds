@@ -1,0 +1,18 @@
+PRGNAM="channels-dvr"
+VERSION="2021.03.30.0356"
+HOMEPAGE="https://getchannels.com"
+DOWNLOAD="UNSUPPORTED"
+MD5SUM=""
+DOWNLOAD_x86_64="https://channels-dvr.s3.amazonaws.com/2021.03.30.0356/ffmpeg-linux-x86_64 \
+https://channels-dvr.s3.amazonaws.com/2021.03.30.0356/ffprobe-linux-x86_64 \
+https://channels-dvr.s3.amazonaws.com/2021.03.30.0356/comskip-linux-x86_64 \
+https://channels-dvr.s3.amazonaws.com/2021.03.30.0356/channels-dvr-linux-x86_64 \
+https://channels-dvr.s3.amazonaws.com/2021.03.30.0356/ffmpeg-dl-linux-x86_64"
+MD5SUM_x86_64="e1d6e17b515c3f1a479666c9d663f773 \
+eb25ea7629eebc3926377d87fbf8fde0 \
+6aca5b23a483849f33964d78c8ec0946 \
+55b33be4d1fe51ce0dcde2bf4bc49ab7 \
+9073a03c450ae5f5d276fbe90d98f6bd"
+REQUIRES=""
+MAINTAINER="Justin Teague"
+EMAIL="arcadellama@posteo.net"

@@ -55,15 +55,13 @@ start() {
     cd $DATA_DIR
     su -l $UNIFI_USER -s $SHELL \
 	    -c "$JAVA -Xmx$MEM_LIMIT -jar $JAR start &> /dev/null &"
-    wait=0
-    while [ $wait -le 15 ]; do
+    wait=15
+    while [ $wait -gt 0 ]; do
 	    if pgrep -l -F $PIDFILE 2>/dev/null | grep -q mongod; then
-		    echo "Success."
 		    exit 0
 	    else
-		    echo -n " . "
 		    sleep 1
-		    (( wait++ ))
+		    (( wait-- ))
 	    fi
     done
     echo "Error."
@@ -76,13 +74,11 @@ stop() {
 	cd $DATA_DIR
 	su -l $UNIFI_USER -s $SHELL \
 	    -c "$JAVA -jar $JAR stop &> /dev/null"
-	wait=0
-	while [ $wait -le 15 ]; do
+	wait=15
+	while [ $wait -gt 0 ]; do
 	if ! pgrep -l -F $PIDFILE 2>/dev/null | grep -q mongod; then
-		echo "Success."
 		exit 0
 	else
-		echo -n " . "
 		sleep 1
 		(( wait++ ))
 	fi
