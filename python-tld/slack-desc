@@ -1,4 +1,4 @@
-# HOW TO EDIT THIS FILE:
+ HOW TO EDIT THIS FILE:
 # The "handy ruler" below makes it easier to edit a package description.
 # Line up the first '|' above the ':' following the base package name, and
 # the '|' on the right side marks the last column you can put a character in.
@@ -6,14 +6,14 @@
 # customary to leave one space after the ':' except on otherwise blank lines.
 
        |-----handy-ruler------------------------------------------------------|
-python-tld: python-tld (short description of app)
+python-tld: python-tld (extracts the top level domain (TLD) from a given URL)
 python-tld:
-python-tld: Long description of python-tld, wrapped at 71 characters *after* the
-python-tld: colon following "python-tld" (and the 'handy ruler' should start at
-python-tld: that colon and be exactly 71 characters long).
-python-tld: If there is room, there might be a link to the homepage of the
-python-tld: application on one of these lines, but it's not necessary.
+python-tld: Extract the top level domain (TLD) from the URL given. List of
+python-tld: TLD names is taken from Public Suffix.
 python-tld:
-python-tld: The maximum number of lines prefixed by "python-tld:" is 11.
-python-tld: Lines without any other text should *not* have a space after the :
+python-tld: <https://https://github.com/barseghyanartur/tld>
+python-tld:
+python-tld:
+python-tld:
+python-tld:
 python-tld:
