@@ -1,8 +1,8 @@
 #!/bin/sh
 
-# Slackware build script for sonarr
+# Slackware build script for ombi
 
-# Copyright 2021 Justin Teague <arcadellama@posteo.net>
+# Copyright 2021 Justin Teague <arcadellama@posteo.net>, Texas, US
 # All rights reserved.
 #
 # Redistribution and use of this script, with or without modification, is
@@ -22,8 +22,8 @@
 #  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 #  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-PRGNAM=sonarr
-VERSION=${VERSION:-3.0.6.1265}
+PRGNAM=ombi
+VERSION=${VERSION:-4.0.1342}
 BUILD=${BUILD:-1}
 TAG=${TAG:-_SBo}
 
@@ -45,9 +45,10 @@ set -e
 rm -rf $PKG
 mkdir -p $TMP $PKG $OUTPUT
 cd $TMP
-rm -rf ${PRGNAM^}
-tar xvf $CWD/${PRGNAM^}.main.$VERSION.linux.tar.gz
-cd ${PRGNAM^}
+rm -rf $PRGNAM-$VERSION
+mkdir -p $PRGNAM-$VERSION
+tar xvf $CWD/linux-x64.tar.gz -C $PRGNAM-$VERSION
+cd $PRGNAM-$VERSION
 chown -R root:root .
 find -L . \
  \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
@@ -55,21 +56,20 @@ find -L . \
  \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
   -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
 
-rm -rf $PWD/${PRGNAM^}.Update
+mkdir -p $PKG/usr/lib/$PRGNAM
+cp -a * $PKG/usr/lib/$PRGNAM
+chmod 755 $PKG/usr/lib/$PRGNAM/${PRGNAM^}
 
-mkdir -p $PKG/usr/lib/$PRGNAM/
-cp -a $PWD/* $PKG/usr/lib/$PRGNAM
+mkdir -p $PKG/var/lib/$PRGNAM
+cp -a appsettings.json $PKG/var/lib/$PRGNAM/appsettings.json.new
+cp -a ClientApp wwwroot $PKG/var/lib/$PRGNAM
+chown -R $OMBI_USER:$OMBI_GROUP $PKG/var/lib/$PRGNAM
 
 mkdir -p $PKG/etc/rc.d
-mv $CWD/rc.$PRGNAM $PKG/etc/rc.d/rc.$PRGNAM.new
-
-find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
-  | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
-
-cp -a $CWD/package_info $PKG/usr/lib/$PRGNAM/package_info
-echo "PackageVersion=$VERSION-$ARCH-$BUILD$TAG" >> $PKG/usr/lib/$PRGNAM/package_info
+mv $CWD/rc.ombi $PKG/etc/rc.d/rc.ombi.new
 
 mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+cp -a $CWD/README $PKG/usr/doc/$PRGNAM-$VERSION/README
 cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
 
 mkdir -p $PKG/install

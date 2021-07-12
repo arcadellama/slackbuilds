@@ -30,19 +30,6 @@ update () {
     sed -i "s|${VERSION}|${LATEST_VERSION}|g" $PRGNAM.{info,SlackBuild}
     . $PRGNAM.info
 
-    if [ "$DOWNLOAD" ]; then
-	DL_ARRAY=($DOWNLOAD)
-	OLDMD5=($MD5SUM)
-	for i in "${!DL_ARRAY[@]}"; do
-		NEWMD5=$(curl -sL ${DL_ARRAY[$i]} | md5sum | cut -d ' ' -f 1)
-		if [ $? -ne 0 ]; then
-		    echo "Error downloading ${DL_ARRAY[$i]}"
-		    exit 1
-		fi
-		sed -i "s|${OLDMD5[$i]}|${NEWMD5}|g" $PRGNAM.info 
-	done
-    fi
-
     if [ "$DOWNLOAD_x86_64" ]; then
 	DL_ARRAY=($DOWNLOAD_x86_64)
 	OLDMD5=($MD5SUM_x86_64)
