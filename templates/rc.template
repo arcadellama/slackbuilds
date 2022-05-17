@@ -1,0 +1,106 @@
+#!/bin/bash
+# ----------------------------------------------------------------------
+#
+# Slackware init script for %SRVCNAM%:
+# /etc/rc.d/rc.%PRGNAM%
+#
+# ----------------------------------------------------------------------
+
+PRGNAM=%PRGNAM%
+SRVCNAM=%SRVCNAM%
+SERVICE_USER=%SERVICE_USER%
+SERVICE_GROUP=%SERVICE_GROUP%
+DATA_DIR=""
+DAEMON=""
+DAEMON_OPTS=""
+PIDFILE=/var/run/$PRGNAM.pid
+
+start() {
+	# Check if already running
+	if pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then
+		echo "$SRVCNAM appears to already be running."
+		exit 0;
+	fi
+
+	# Create working directory if it doesn't exist
+	if [ ! -d $DATA_DIR ]; then
+		mkdir -p $DATA_DIR
+		if [ $? -ne 0 ]; then
+			echo "Error creating $DATA_DIR."
+			exit 1
+		fi
+	fi
+
+	# Take ownership of the working directory
+	chown -R $SERVICE_USER:$SERVICE_GROUP $DATA_DIR
+	if [ $? -ne 0 ]; then
+		echo "Error setting ownership of $DATA_DIR."
+		exit 1
+	fi
+
+	# Start the service
+	rm -f $PIDFILE
+	cd $DATA_DIR
+	echo "Starting $SRVCNAM"
+	su -m $SERVICE_USER -s /bin/bash -c \
+		"exec -a $SRVCNAM $DAEMON $DAEMON_OPTS &" >/dev/null 2>&1
+
+	# Check that it worked
+	wait=10
+	while [ $wait -gt 0 ]; do
+		PID=$(pidof $SRVCNAM)
+		if [ $PID ]; then
+			echo $PID > $PIDFILE
+			exit 0
+		fi
+		sleep 1
+		(( wait -- ))
+	done
+
+	echo "Error starting $SRVCNAM."
+	exit 1
+
+}
+
+stop() {
+	if ! pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then
+		echo "$SRVCNAM does not appear to be running."
+		exit 1
+	fi
+
+	echo "Stopping $SRVCNAM"
+	kill -15 $(cat $PIDFILE)
+	wait=10
+	while [ $wait -gt 0 ]; do
+		if ! pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then
+			rm -f $PIDFILE
+			exit 0
+		fi
+		sleep 1
+		(( wait -- ))
+	done
+
+	echo "Error stopping $SRVCNAM."
+	exit 1
+}
+
+case "$1" in
+    start)
+	start
+	;;
+    stop)
+	stop
+	;;
+    status)
+	if pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then
+	    echo "$SRVCNAM running as process $(cat $PIDFILE)"
+    	else
+	    echo "$SRVCNAM is stopped."
+	fi
+	;;
+    *)
+	echo "Usage start|stop|status"
+	;;
+esac
+
+exit 0
