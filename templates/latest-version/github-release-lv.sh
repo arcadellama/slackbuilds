@@ -1,50 +1,91 @@
 #!/usr/bin/env bash
-# Git Release Template
+# Latest Version check for a Git Release SLACKBUILD
 
-slackbuild="victor-mono-fonts"
-repo_category="system"
-git_repo="rubjo"
-git_name="$slackbuild"
+LOCAL_PRGNAM="github-release"
+LOCAL_VERSION="0.1"
 
-latest_version="${latest_version:-}"
-
-working_dir="$repo_category/$slackbuild"
-upload_dir="/tmp/slackbuild-uploads"
+SLACKBUILD="${SLACKBUILD:-}"
+REPO_CATEGORY="${REPO_CATEGORY:-}"
+GIT_REPO="${GIT_REPO:-}"
+GIT_NAME="${GIT_NAME:-$SLACKBUILD}"
+REPO_DIR="${REPO_DIR:-.}"
+SLKBLD_DIR="${SLKBLD_DIR:-$REPO_DIR/$REPO_CATEGORY/$SLACKBUILD}"
+UPLOAD_DIR="${UPLOAD_DIR:-/tmp/$LOCAL_PRGNM}"
+LATEST_VERSION="${LATEST_VERSION:-}"
 
 set -e
 
+usage() {
+    printf "%s: Version:%s\n\n\
+        Usage: %s -s <slackbuild> -c <category> -r <git repo>\n\n\
+        Optional: -n <git-name> -d <slackbuild-dir> -u <upload-dir> -l <latest-version>\n" \
+        "$LOCAL_PRGNAM" "$LOCAL_VERSION" "$LOCAL_PRGNAM"
+}
+
+
+printerr() {
+    printf "Error: %s" "$1"
+}
+
+
+prompt_yn() {
+    read -p "$1" confirm
+    case $confirm in
+        [Yy]* )
+	    return 0
+	    ;;
+	[Nn]* )
+        return 1
+	    ;;
+	    * )
+	    echo "Invalid response."
+	    exit 1
+	    ;;
+    esac
+}
+
 source_info () {
 
-    if [ -d "$working_dir" ]; then
-        cd "$working_dir" >/dev/null
+    if [ -d "$SLKBLD_DIR" ]; then
+        cd "$SLKBLD_DIR" >/dev/null
     else
-        echo "cannot find $working_dir"
+        printerr "Cannot find $SLKBLD_DIR"
         exit 1
     fi
 
-    if [ -f $slackbuild.info ]; then
-        . $slackbuild.info
+    if [ -f $SLACKBUILD.info ]; then
+        . $SLACKBUILD.info
     else
-        echo "Cannot find $slackbuild.info"
+        printerr "Cannot find $SLACKBUILD.info"
         exit 1
     fi
 }
 
+
 get_latest_version () {
     # Get latest version automatically
-    latest_version="$(curl -s \
-        https://api.github.com/repos/$git_repo/$git_name/releases/latest \
+    LATEST_VERSION="$(curl -s \
+        https://api.github.com/repos/$GIT_REPO/$GIT_NAME/releases/latest \
     | grep -Po '"tag_name": "\K.*?(?=")' | sed -e 's/v//1')"
 
 }
 
+prepare_upload () {
+    __upload_file="$UPLOAD_DIR/$SLACKBUILD.tar.gz"
+        cd ..
+        mkdir -p "$UPLOAD_DIR"
+        tar -czvf "$__upload_file" "$SLACKBUILD"
+        printf "%s is ready to be submitted from %s.\n" \
+            "$SLACKBUILD" "$__upload_file"
+}
+
 update () {
     
-    # Update the VERSION in info and Slackbuild
-    sed -i "s|$VERSION|$latest_version|g" "$slackbuild".{info,SlackBuild} 
+    # Update the VERSION in info and SLACKBUILD
+    sed -i "s|$VERSION|$LATEST_VERSION|g" "$SLACKBUILD".{info,SLACKBUILD} 
 
     # Re-source the info file with the updated variables
-    . "$slackbuild".info
+    . "$SLACKBUILD".info
 
     if [ "$DOWNLOAD" ]; then
 	__dl_array=($DOWNLOAD)
@@ -55,7 +96,7 @@ update () {
 		    echo "Error downloading ${__dl_array[$i]}"
 		    exit 1
 		fi
-		sed -i "s|${__oldmd5[$i]}|${__newmd5}|g" "$slackbuild".info 
+		sed -i "s|${__oldmd5[$i]}|${__newmd5}|g" "$SLACKBUILD".info 
 	done
     fi
 
@@ -68,55 +109,91 @@ update () {
 		    echo "Error downloading ${__dl_array64[$i]}"
 		    exit 1
 		fi
-		sed -i "s|${__oldmd564[$i]}|${__newmd564}|g" "$slackbuild".info 
+		sed -i "s|${__oldmd564[$i]}|${__newmd564}|g" "$SLACKBUILD".info 
 	done
     fi
 
     sbolint || exit 1
+    prepare_upload
 
 }
 
-prompt () {
-    read -p "Do you want to update $slackbuild from $VERSION to $latest_version? " confirm
-    case $confirm in
-        [Yy]* )
-	    update
-	    ;;
-	[Nn]* )
-	    exit 0
-	    ;;
-	    * )
-	    echo "Invalid response."
-	    exit 1
-	    ;;
-    esac
+check_exists () {
+    __req_var=("$@")
+
+    for i in "${__req_var[@]}"; do
+        if [ -z "$i" ]; then
+            return 1
+        fi
+    done
+    return 0
 }
 
-prepare_upload () {
-    __upload_file="$upload_dir/$slackbuild.tar.gz"
-    if [ ! -e $__upload_file ]; then
-        cd ..
-        mkdir -p "$upload_dir"
-        tar -czvf "$__upload_file" "$slackbuild"
-        printf "%s is ready to be submitted from %s.\n" \
-            "$slackbuild" "$__upload_file"
-    fi
-}
 
 main () {
-    source_info
-    get_latest_version
 
-    if [ "$latest_version" != "$VERSION" ]; then
-        prompt
-    elif [ "$latest_version" = "$VERSION" ]; then
-        echo "$slackbuild is at latest version ($VERSION)."
-    else
-        echo "Error checking version."
+    while [ $# -gt 0 ]; do
+        case $1 in
+            -s|--slackbuild)
+                SLACKBUILD="$2"
+                shift 2
+                ;;
+            -c|--category)
+                REPO_CATEGORY="$2"
+                shift 2
+                ;;
+            -r|--git-repo)
+                GIT_REPO="$2"
+                shift 2
+                ;;
+            -n|--git-name)
+                GIT_NAME="$2"
+                shift 2
+                ;;
+            -d|--slackbuild-dir)
+                SLKBLD_DIR="$2"
+                shift 2
+                ;;
+            -u|--upload-dir)
+                UPLOAD_DIR="$2"
+                shift 2
+                ;;
+            -l|--latest-version)
+                LATEST_VERSION="$2"
+                shift 2
+                ;;
+            *)
+                usage
+                exit 1
+                ;;
+        esac
+    done
+
+    if ! check_exists "$SLACKBUILD" "$REPO_CATEGORY" "$GIT_REPO"; then
+        usage
         exit 1
     fi
 
-    prepare_upload
+    source_info
+
+    if ! check_exists "$LATEST_VERSION"; then
+        get_latest_version
+    fi
+
+    if [ "$LATEST_VERSION" != "$VERSION" ]; then
+        if prompt_yn "Do you want to update $SLACKBUILD from $VERSION to $LATEST_VERSION? "; then
+            update
+        fi
+    elif [ "$LATEST_VERSION" = "$VERSION" ]; then
+        echo "$SLACKBUILD is at latest version ($VERSION)."
+        if prompt_yn "Do you want to create an upload tar for $SLACKBUILD?"; then
+            prepare_upload
+        fi
+    else
+        printerr "Cannot check version."
+        exit 1
+    fi
+
 }
 
 main $@
