@@ -1,34 +1,44 @@
 #!/usr/bin/env bash
-# Latest Version check for a Git Release SLACKBUILD
+# Latest Version check for a Git Release slackbuild
 
-LOCAL_PRGNAM="github-release"
-LOCAL_VERSION="0.1"
+# Global
+prgnam="github-release"
+prgnam_version="0.1"
 
-SLACKBUILD="${SLACKBUILD:-}"
-REPO_CATEGORY="${REPO_CATEGORY:-}"
-GIT_REPO="${GIT_REPO:-}"
-GIT_NAME="${GIT_NAME:-$SLACKBUILD}"
-REPO_DIR="${REPO_DIR:-.}"
-SLKBLD_DIR="${SLKBLD_DIR:-$REPO_DIR/$REPO_CATEGORY/$SLACKBUILD}"
-UPLOAD_DIR="${UPLOAD_DIR:-/tmp/$LOCAL_PRGNM}"
-LATEST_VERSION="${LATEST_VERSION:-}"
+# Required options
+slackbuild="${slackbuild:-}"
+repo_category="${repo_category:-}"
+git_repo="${git_repo:-}"
+
+# Optional with defaults
+git_name="${git_name:-$slackbuild}"
+latest_version="${latest_version:-}"
+
+# Environment defaults
+repo_dir="${repo_dir:-.}"
+slkbld_dir="${slkbld_dir:-$repo_dir/$repo_category/$slackbuild}"
+upload_dir="${upload_dir:-/tmp/$LOCAL_PRGNM}"
+
+latest_commit="${latest_commit:-}"
+latest_commit_date="${latest_commit_date:-}"
 
 set -e
 
-usage() {
+usage () {
     printf "%s: Version:%s\n\n\
         Usage: %s -s <slackbuild> -c <category> -r <git repo>\n\n\
-        Optional: -n <git-name> -d <slackbuild-dir> -u <upload-dir> -l <latest-version>\n" \
-        "$LOCAL_PRGNAM" "$LOCAL_VERSION" "$LOCAL_PRGNAM"
+        Optional: -n <git-name> -d <slackbuild-dir> -u <upload-dir> -l\
+        <latest-version>\n" \
+        "$prgnam" "$prgnam_version" "$prgnam"
 }
 
 
-printerr() {
+print_err () {
     printf "Error: %s" "$1"
 }
 
 
-prompt_yn() {
+prompt_yn () {
     read -p "$1" confirm
     case $confirm in
         [Yy]* )
@@ -44,48 +54,84 @@ prompt_yn() {
     esac
 }
 
+check_exists () {
+    __req_var=("$@")
+
+    for i in "${__req_var[@]}"; do
+        if [ -z "$i" ]; then
+            return 1
+        fi
+    done
+    return 0
+}
+
+is_commit () {
+    grep -q "COMMIT=" "$slkbld_dir/$slackbuild.SlackBuild"
+    return $?
+}
+
 source_info () {
 
-    if [ -d "$SLKBLD_DIR" ]; then
-        cd "$SLKBLD_DIR" >/dev/null
+    if [ -d "$slkbld_dir" ]; then
+        cd "$slkbld_dir" >/dev/null
     else
-        printerr "Cannot find $SLKBLD_DIR"
+        print_err "Cannot find $slkbld_dir."
         exit 1
     fi
 
-    if [ -f $SLACKBUILD.info ]; then
-        . $SLACKBUILD.info
+    if [ -f $slackbuild.info ]; then
+        . $slackbuild.info
     else
-        printerr "Cannot find $SLACKBUILD.info"
+        print_err "Cannot find $slackbuild.info"
         exit 1
     fi
 }
 
-
 get_latest_version () {
-    # Get latest version automatically
-    LATEST_VERSION="$(curl -s \
-        https://api.github.com/repos/$GIT_REPO/$GIT_NAME/releases/latest \
-    | grep -Po '"tag_name": "\K.*?(?=")' | sed -e 's/v//1')"
+
+    if is_commit; then
+        # Get latest github COMMIT version
+        latest_commit_date=\
+            "$(curl -s \
+            https://api.github.com/repos/$git_repo/$git_name/commits/main \
+            | grep '"date"' \
+            | tail -n 1 \
+            | tr -d " \"" \
+            | cut -d : -f 2 \
+            | cut -d T -f 1 \
+            | tr -d "-")" # must be a cleaner way???
+
+        latest_commit=\
+            "$(git ls-remote https://github.com/$git_repo/$slackbuild main \
+            | awk '{print $1}')"
+
+        latest_version="$latest_commit_date"_"$(first_seven $latest_commit)"
+    else
+        # Get latest github RELEASE version
+        latest_version="$(curl -s \
+        https://api.github.com/repos/$git_repo/$git_name/releases/latest \
+        | grep -Po '"tag_name": "\K.*?(?=")' | sed -e 's/v//1')"
+
+    fi
 
 }
 
 prepare_upload () {
-    __upload_file="$UPLOAD_DIR/$SLACKBUILD.tar.gz"
+    __upload_file="$upload_dir/$slackbuild.tar.gz"
         cd ..
-        mkdir -p "$UPLOAD_DIR"
-        tar -czvf "$__upload_file" "$SLACKBUILD"
+        mkdir -p "$upload_dir"
+        tar -czvf "$__upload_file" "$slackbuild"
         printf "%s is ready to be submitted from %s.\n" \
-            "$SLACKBUILD" "$__upload_file"
+            "$slackbuild" "$__upload_file"
 }
 
 update () {
     
-    # Update the VERSION in info and SLACKBUILD
-    sed -i "s|$VERSION|$LATEST_VERSION|g" "$SLACKBUILD".{info,SLACKBUILD} 
+    # Update the VERSION in info and slackbuild
+    sed -i "s|$VERSION|$latest_version|g" "$slackbuild".{info,slackbuild} 
 
     # Re-source the info file with the updated variables
-    . "$SLACKBUILD".info
+    . "$slackbuild".info
 
     if [ "$DOWNLOAD" ]; then
 	__dl_array=($DOWNLOAD)
@@ -96,7 +142,7 @@ update () {
 		    echo "Error downloading ${__dl_array[$i]}"
 		    exit 1
 		fi
-		sed -i "s|${__oldmd5[$i]}|${__newmd5}|g" "$SLACKBUILD".info 
+		sed -i "s|${__oldmd5[$i]}|${__newmd5}|g" "$slackbuild".info 
 	done
     fi
 
@@ -109,7 +155,7 @@ update () {
 		    echo "Error downloading ${__dl_array64[$i]}"
 		    exit 1
 		fi
-		sed -i "s|${__oldmd564[$i]}|${__newmd564}|g" "$SLACKBUILD".info 
+		sed -i "s|${__oldmd564[$i]}|${__newmd564}|g" "$slackbuild".info 
 	done
     fi
 
@@ -118,48 +164,37 @@ update () {
 
 }
 
-check_exists () {
-    __req_var=("$@")
-
-    for i in "${__req_var[@]}"; do
-        if [ -z "$i" ]; then
-            return 1
-        fi
-    done
-    return 0
-}
-
 
 main () {
 
     while [ $# -gt 0 ]; do
         case $1 in
             -s|--slackbuild)
-                SLACKBUILD="$2"
+                slackbuild="$2"
                 shift 2
                 ;;
             -c|--category)
-                REPO_CATEGORY="$2"
+                repo_category="$2"
                 shift 2
                 ;;
             -r|--git-repo)
-                GIT_REPO="$2"
+                git_repo="$2"
                 shift 2
                 ;;
             -n|--git-name)
-                GIT_NAME="$2"
+                git_name="$2"
                 shift 2
                 ;;
             -d|--slackbuild-dir)
-                SLKBLD_DIR="$2"
+                slkbld_dir="$2"
                 shift 2
                 ;;
             -u|--upload-dir)
-                UPLOAD_DIR="$2"
+                upload_dir="$2"
                 shift 2
                 ;;
             -l|--latest-version)
-                LATEST_VERSION="$2"
+                latest_version="$2"
                 shift 2
                 ;;
             *)
@@ -169,28 +204,30 @@ main () {
         esac
     done
 
-    if ! check_exists "$SLACKBUILD" "$REPO_CATEGORY" "$GIT_REPO"; then
+    if ! check_exists "$slackbuild" "$repo_category" "$git_repo"; then
         usage
         exit 1
     fi
 
     source_info
 
-    if ! check_exists "$LATEST_VERSION"; then
+    if ! check_exists "$latest_version"; then
         get_latest_version
     fi
 
-    if [ "$LATEST_VERSION" != "$VERSION" ]; then
-        if prompt_yn "Do you want to update $SLACKBUILD from $VERSION to $LATEST_VERSION? "; then
+    if [ "$latest_version" != "$VERSION" ]; then
+        if prompt_yn \
+            "Update $slackbuild from $VERSION to $latest_version? "; then
             update
         fi
-    elif [ "$LATEST_VERSION" = "$VERSION" ]; then
-        echo "$SLACKBUILD is at latest version ($VERSION)."
-        if prompt_yn "Do you want to create an upload tar for $SLACKBUILD?"; then
+    elif [ "$latest_version" = "$VERSION" ]; then
+        printf "%s is at latest version (%s).\n" "$slackbuild" "$VERSION"
+        if prompt_yn \
+            "Create an upload tar for $slackbuild? "; then
             prepare_upload
         fi
     else
-        printerr "Cannot check version."
+        print_err "Cannot check version of $slackbuild."
         exit 1
     fi
 

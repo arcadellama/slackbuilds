@@ -63,8 +63,8 @@ update () {
     . "$slackbuild".info
 
     if [ "$DOWNLOAD" ]; then
-	__dl_array=($DOWNLOAD)
-	__oldmd5=($MD5SUM)
+	__dl_array=("$DOWNLOAD")
+	__oldmd5=("$MD5SUM")
 	for i in "${!__dl_array[@]}"; do
 		__newmd5=$(curl -sL ${__dl_array[$i]} | md5sum | cut -d ' ' -f 1)
 		if [ $? -ne 0 ]; then
