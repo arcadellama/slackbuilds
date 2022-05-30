@@ -1,0 +1,23 @@
+Sonarr is a PVR for Usenet and BitTorrent users. It can monitor
+multiple RSS feeds for new episodes of your favorite shows and will
+grab, sort and rename them. It can also be configured to
+automatically upgrade the quality of files already downloaded when
+a better quality format becomes available.
+
+You'll need to create a sonarr user in order to run with the provided init
+script:
+
+# useradd -r -d /var/lib/sonarr sonarr
+
+You'll also need to add the following to /etc/rc.d/rc.local
+
+if [ -x /etc/rc.d/rc.sonarr ]; then
+    /etc/rc.d/rc./sonarr start
+fi
+
+And the following to /etc/rc.d/rc.local_shutdown
+
+if [ -x /etc/rc.d/rc.sonarr ]; then
+    /etc/rc.d/rc./sonarr stop
+fi
+
