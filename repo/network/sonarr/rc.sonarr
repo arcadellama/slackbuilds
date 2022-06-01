@@ -32,8 +32,7 @@ start() {
 	fi
 
 	# Take ownership of the working directory
-	chown -R $SONARR_USER:$SONARR_GROUP $DATA_DIR
-	if [ $? -ne 0 ]; then
+	if ! chown -R $SONARR_USER:$SONARR_GROUP $DATA_DIR
 		echo "Error setting ownership of $DATA_DIR."
 		exit 1
 	fi
