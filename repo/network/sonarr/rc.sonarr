@@ -18,69 +18,59 @@ PIDFILE=/var/run/$PRGNAM.pid
 start() {
 	# Check if already running
 	if pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then
-		echo "$SRVCNAM appears to already be running."
+		echo "$PRGNAM appears to already be running."
 		exit 0;
 	fi
 
 	# Create working directory if it doesn't exist
 	if [ ! -d $DATA_DIR ]; then
 		mkdir -p $DATA_DIR
-		if [ $? -ne 0 ]; then
-			echo "Error creating $DATA_DIR."
-			exit 1
-		fi
 	fi
 
 	# Take ownership of the working directory
-	if ! chown -R $SONARR_USER:$SONARR_GROUP $DATA_DIR
-		echo "Error setting ownership of $DATA_DIR."
+	chown -R $SONARR_USER:$SONARR_GROUP $DATA_DIR || exit 1
+		printf "Error setting ownership of %s\n." "$DATA_DIR."
 		exit 1
-	fi
 
 	# Start the service
 	rm -f $PIDFILE
-	cd $DATA_DIR
-	echo "Starting $SRVCNAM"
+	cd $DATA_DIR || exit 1
+	printf "Starting %s.\n" "$PRGNAM"
 	su -m $SONARR_USER -s /bin/bash -c \
 		"exec -a $SRVCNAM $DAEMON $DAEMON_OPTS &" >/dev/null 2>&1
-
-	# Check that it worked
-	wait=10
-	while [ $wait -gt 0 ]; do
-		PID=$(pidof $SRVCNAM)
-		if [ $PID ]; then
-			echo $PID > $PIDFILE
-			exit 0
-		fi
-		sleep 1
-		(( wait -- ))
-	done
-
-	echo "Error starting $SRVCNAM."
-	exit 1
 
 }
 
 stop() {
 	if ! pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then
-		echo "$SRVCNAM does not appear to be running."
+		printf "%s does not appear to be running.\n" "$PRGNAM"
 		exit 1
 	fi
 
-	echo "Stopping $SRVCNAM"
-	kill -15 $(cat $PIDFILE)
+	printf "Stopping %s " "$PRGNAM"
+	kill -15 "$(cat $PIDFILE)"
 	wait=10
 	while [ $wait -gt 0 ]; do
+        printf "."
 		if ! pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then
 			rm -f $PIDFILE
+            printf " done.\n" 
 			exit 0
 		fi
 		sleep 1
 		(( wait -- ))
 	done
 
-	echo "Error stopping $SRVCNAM."
+	printf "\nError stopping %s.\n" "$PRGNAM."
 	exit 1
+}
+
+status () {
+	if pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then
+	    printf "%s running as process %s.\n" "$PRGNAM" "$(cat $PIDFILE)"
+    	else
+	    printf "%s is stopped.\n" "$PRGNAM"
+	fi
 }
 
 case "$1" in
@@ -91,14 +81,10 @@ case "$1" in
 	stop
 	;;
     status)
-	if pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then
-	    echo "$SRVCNAM running as process $(cat $PIDFILE)"
-    	else
-	    echo "$SRVCNAM is stopped."
-	fi
+    status
 	;;
     *)
-	echo "Usage start|stop|status"
+	printf "Usage start|stop|status \n"
 	;;
 esac
 

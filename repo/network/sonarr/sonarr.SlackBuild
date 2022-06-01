@@ -67,8 +67,8 @@ rm -rf $PKG
 mkdir -p $TMP $PKG $OUTPUT
 cd $TMP
 rm -rf ${PRGNAM^}
-tar xvf $CWD/${PRGNAM^}-$VERSION.tar.gz
-cd ${PRGNAM^}-$VERSION
+tar xvf $CWD/${PRGNAM^}.main.$VERSION.linux.tar.gz
+cd ${PRGNAM^}
 chown -R root:root .
 find -L . \
  \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
@@ -81,14 +81,11 @@ rm -rf $PWD/${PRGNAM^}.Update
 mkdir -p $PKG/usr/lib/$PRGNAM/
 cp -a $PWD/* $PKG/usr/lib/$PRGNAM
 
-mkdir -p $PKG/etc/rc.d
-mv $CWD/rc.$PRGNAM $PKG/etc/rc.d/rc.$PRGNAM.new
+mkdir -p $PKG/usr/share/$PRGNAM
+cp -a $CWD/rc.$PRGNAM $PKG/usr/share/$PRGNAM/rc.$PRGNAM.new
 
 find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
   | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
-
-find $PKG/usr/man -type f -exec gzip -9 {} \;
-for i in $( find $PKG/usr/man -type l ) ; do ln -s $( readlink $i ).gz $i.gz ; rm $i ; done
 
 cp -a $CWD/package_info $PKG/usr/lib/$PRGNAM/package_info
 echo "PackageVersion=$VERSION-$ARCH-$BUILD$TAG" >> $PKG/usr/lib/$PRGNAM/package_info
