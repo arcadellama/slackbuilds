@@ -1,0 +1,86 @@
+#!/bin/bash
+
+# daemon - http://libslack.org/daemon/
+#
+# Copyright (C) 1999-2004, 2010, 2020-2021 raf <raf@raf.org>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, see <https://www.gnu.org/licenses/>.
+#
+
+# 20210304 raf <raf@raf.org>
+# 20220530 Justin Teague <arcadellama@posteo.net>
+
+name="sonarr"
+command="/usr/bin/mono --debug /usr/lib/sonarr/Sonarr.exe"
+command_args=" -nobrowser -data=/var/lib/sonarr"
+daemon="/usr/bin/daemon"
+
+[ -x "$daemon" ] || exit 0
+[ -x "$command" ] || exit 0
+
+pidfiles="/var/run"
+group="sonarr"
+user="sonarr:$group"
+
+case "$1" in
+	start)
+		if "$daemon" --running --name "$name" --pidfiles "$pidfiles"
+		then
+			echo "$name is already running."
+		else
+			echo -n "Starting $name..."
+			"$daemon" --respawn \
+				--name "$name" --pidfiles "$pidfiles" \
+				--user $user \
+				-- \
+				"$command" $command_args
+			echo done.
+		fi
+		;;
+
+	stop)
+		if "$daemon" --running --name "$name" --pidfiles "$pidfiles"
+		then
+			echo -n "Stopping $name..."
+			"$daemon" --stop --name "$name" --pidfiles "$pidfiles"
+			echo done.
+		else
+			echo "$name is not running."
+		fi
+		;;
+
+	restart|reload)
+		if "$daemon" --running --name "$name" --pidfiles "$pidfiles"
+		then
+			echo -n "Restarting $name..."
+			"$daemon" --restart --name "$name" --pidfiles "$pidfiles"
+			echo done.
+		else
+			echo "$name is not running."
+			exit 1
+		fi
+		;;
+
+	status)
+		"$daemon" --running --name "$name" --pidfiles "$pidfiles" --verbose
+		;;
+
+	*)
+		echo "usage: $0 <start|stop|restart|reload|status>" >&2
+		exit 1
+esac
+
+exit 0
+
+# vi:set ts=4 sw=4:
