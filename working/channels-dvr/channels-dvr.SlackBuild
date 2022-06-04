@@ -1,8 +1,8 @@
-#!/bin/sh
+#!/bin/bash
 
 # Slackware build script for channels-dvr
 
-# Copyright 2021 Justin Teague <arcadellama@posteo.net>, Texas, US
+# Copyright <2022> Justin Teague Texas, US
 # All rights reserved.
 #
 # Redistribution and use of this script, with or without modification, is
@@ -22,10 +22,13 @@
 #  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 #  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+cd $(dirname $0) ; CWD=$(pwd)
+
 PRGNAM=channels-dvr
 VERSION=${VERSION:-2022.03.23.0209}
 BUILD=${BUILD:-1}
 TAG=${TAG:-_SBo}
+PKGTYPE=${PKGTYPE:-tgz}
 
 if [ -z "$ARCH" ]; then
   case "$( uname -m )" in
@@ -35,12 +38,16 @@ if [ -z "$ARCH" ]; then
   esac
 fi
 
-CWD=$(pwd)
+if [ ! -z "${PRINT_PACKAGE_NAME}" ]; then
+  echo "$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.$PKGTYPE"
+  exit 0
+fi
+
 TMP=${TMP:-/tmp/SBo}
 PKG=$TMP/package-$PRGNAM
 OUTPUT=${OUTPUT:-/tmp}
 
-set -e
+set -e 
 
 rm -rf $PKG
 mkdir -p $TMP $PKG $OUTPUT
@@ -52,9 +59,7 @@ for i in {channels-dvr,comskip,ffmpeg-dl,ffmpeg,ffprobe}; do
     chmod 755 $PRGNAM-$VERSION/$i
 done
 cd $PRGNAM-$VERSION
-
 chown -R root:root .
-
 find -L . \
  \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
   -o -perm 511 \) -exec chmod 755 {} \; -o \
@@ -67,7 +72,7 @@ cp -a * $PKG/usr/lib/$PRGNAM/$VERSION
 mkdir -p $PKG/var/lib/$PRGNAM $PKG/var/lib/$PRGNAM/data
 
 mkdir -p $PKG/etc/rc.d
-mv $CWD/rc.channels-dvr $PKG/etc/rc.d/rc.channels-dvr.new
+cp -a $CWD/rc.channels-dvr $PKG/etc/rc.d/rc.channels-dvr.new
 
 ( pushd $PKG/usr/lib/$PRGNAM; ln -nsf /usr/lib/$PRGNAM/$VERSION latest; popd )
 
@@ -79,4 +84,4 @@ cat $CWD/slack-desc > $PKG/install/slack-desc
 cat $CWD/doinst.sh > $PKG/install/doinst.sh
 
 cd $PKG
-/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.$PKGTYPE

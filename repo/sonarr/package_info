@@ -1,3 +1,4 @@
 Branch=main
 UpdateMethod=External
-PackageAuthor=[SBo](https://slackbuilds.org/repository/15.0/network/sonarr/)
+PackageAuthor=arcadellama@posteo.net
+PackageAuthor=Use the SlackBuild located at [slackbuilds.org](https://slackbuilds.org/repository/15.0/network/sonarr/)

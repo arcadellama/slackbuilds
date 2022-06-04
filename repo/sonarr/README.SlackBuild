@@ -1,2 +1,8 @@
-A sample script for running sonarr as a daemon is located at
-/usr/share/sonarr/rc.sonarr
+This package installs a daemon script.
+Enable it with:
+# chmod +x /etc/rc.d/rc.sonarr
+
+The built-in updater is disabled.
+If you like to use the updater, remove the file /usr/share/sonarr/package_info,
+chown the directory /usr/share/sonarr/bin to sonarr and restart sonarr
+The built-in updater can now be configured in the Settings tab of sonarr
