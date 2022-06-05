@@ -11,7 +11,7 @@ SRVCNAM=${PRGNAM^}
 SONARR_USER=%%SONARR_USER%%
 SONARR_GROUP=%%SONARR_GROUP%%
 DATA_DIR="/var/lib/$PRGNAM"
-DAEMON="/usr/bin/mono --debug /usr/lib/sonarr/Sonarr.exe"
+DAEMON="/usr/bin/mono --debug /usr/lib/sonarr/bin/Sonarr.exe"
 DAEMON_OPTS="-nobrowser -data=$DATA_DIR"
 PIDFILE="$DATA_DIR/$PRGNAM.pid"
 

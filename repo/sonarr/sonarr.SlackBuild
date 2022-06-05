@@ -92,8 +92,8 @@ find -L . \
 
 rm -rf $PWD/${PRGNAM^}.Update
 
-mkdir -p $PKG/usr/lib/$PRGNAM/
-cp -a $PWD/* $PKG/usr/lib/$PRGNAM
+mkdir -p $PKG/usr/lib/$PRGNAM/bin
+cp -a $PWD/* $PKG/usr/lib/$PRGNAM/bin/
 
 find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
   | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
@@ -104,8 +104,8 @@ sed -i -e "s/%%SONARR_USER%%/$SONARR_USER/g" $PKG/etc/rc.d/rc.$PRGNAM.new
 sed -i -e "s/%%SONARR_GROUP%%/$SONARR_GROUP/g" $PKG/etc/rc.d/rc.$PRGNAM.new
 chmod 0644 $PKG/etc/rc.d/rc.$PRGNAM.new
 
-cat $CWD/release_info > $PKG/usr/lib/$PRGNAM/release_info
-echo "PackageVersion=$VERSION-$ARCH-$BUILD$TAG" >> $PKG/usr/lib/$PRGNAM/release_info
+cat $CWD/package_info > $PKG/usr/lib/$PRGNAM/package_info
+echo "PackageVersion=$VERSION-$ARCH-$BUILD$TAG" >> $PKG/usr/lib/$PRGNAM/package_info
 
 mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
 cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
