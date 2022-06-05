@@ -12,10 +12,10 @@ The default init runs as sonarr:sonarr with its $HOME as
 
 Example script to add a sonarr user and group:
 
-# useradd -r -m -d /var/lib/sonarr -s /bin/false -U sonarr
+    # useradd -r -m -d /var/lib/sonarr -s /bin/false -U sonarr
 
 It is recomended to have sonarr in the same group as your
 download client(s). You can change the default user and group
 at build time:
 
-# SONARR_USER=user SONARR_GROUP=group ./sonarr.SlackBuild
+    # SONARR_USER=user SONARR_GROUP=group ./sonarr.SlackBuild
