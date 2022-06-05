@@ -4,12 +4,13 @@ grab, sort and rename them. It can also be configured to
 automatically upgrade the quality of files already downloaded when
 a better quality format becomes available.
 
-This package installs a daemon script.
-Enable it with:
-# chmod +x /etc/rc.d/rc.sonarr
+This package installs a daemon script at
+/etc/rc.d/rc.sonar
 
 The default init runs as sonarr:sonarr with its $HOME as
 /var/lib/sonarr
+
+Example script to add a sonarr user and group:
 
 # useradd -r -m -d /var/lib/sonarr -s /bin/false -U sonarr
 
