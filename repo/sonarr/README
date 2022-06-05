@@ -3,3 +3,18 @@ multiple RSS feeds for new episodes of your favorite shows and will
 grab, sort and rename them. It can also be configured to
 automatically upgrade the quality of files already downloaded when
 a better quality format becomes available.
+
+This package installs a daemon script.
+Enable it with:
+# chmod +x /etc/rc.d/rc.sonarr
+
+The default init runs as sonarr:sonarr with its $HOME as
+/var/lib/sonarr
+
+# useradd -r -m -d /var/lib/sonarr -s /bin/false -U sonarr
+
+It is recomended to have sonarr in the same group as your
+download client(s). You can change the default user and group
+at build time:
+
+# SONARR_USER=user SONARR_GROUP=group ./sonarr.SlackBuild

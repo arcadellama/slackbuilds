@@ -61,7 +61,21 @@ else
   LIBDIRSUFFIX=""
 fi
 
+SONARR_USER=${SONARR_USER:-$PRGNAM}
+SONARR_GROUP=${SONARR_GROUP:-$PRGNAM}
+
 set -e 
+
+if ! getent passwd $SONARR_USER 1>/dev/null 2>/dev/null; then
+    echo "You need to have a $SONARR_USER user to run this script."
+    echo 
+    echo "Either, create the user and group with:"
+    echo "    # useradd -r -m -d /var/lib/sonarr -s /bin/false -U $SONARR_USER"
+    echo
+    echo "Or, re-run this script with the desired user:group,"
+    echo "    # SONARR_USER=user SONARR_GROUP=group ./sonarr.SlackBuild"
+    exit 1
+fi
 
 rm -rf $PKG
 mkdir -p $TMP $PKG $OUTPUT
@@ -81,21 +95,20 @@ rm -rf $PWD/${PRGNAM^}.Update
 mkdir -p $PKG/usr/lib/$PRGNAM/
 cp -a $PWD/* $PKG/usr/lib/$PRGNAM
 
-mkdir -p $PKG/usr/share/$PRGNAM
-cp -a $CWD/rc.$PRGNAM $PKG/usr/share/$PRGNAM/rc.$PRGNAM.new
-
 find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
   | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
 
-cp -a $CWD/package_info $PKG/usr/lib/$PRGNAM/package_info
-echo "PackageVersion=$VERSION-$ARCH-$BUILD$TAG" >> $PKG/usr/lib/$PRGNAM/package_info
+mkdir -p $PKG/etc/rc.d
+cat $CWD/rc.$PRGNAM > $PKG/etc/rc.d/rc.$PRGNAM.new
+sed -i -e "s/%%SONARR_USER%%/$SONARR_USER/g" $PKG/etc/rc.d/rc.$PRGNAM.new
+sed -i -e "s/%%SONARR_GROUP%%/$SONARR_GROUP/g" $PKG/etc/rc.d/rc.$PRGNAM.new
+chmod 0644 $PKG/etc/rc.d/rc.$PRGNAM.new
+
+cat $CWD/release_info > $PKG/usr/lib/$PRGNAM/release_info
+echo "PackageVersion=$VERSION-$ARCH-$BUILD$TAG" >> $PKG/usr/lib/$PRGNAM/release_info
 
 mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
 cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
-
-mkdir -p $PKG/install
-cat $CWD/slack-desc > $PKG/install/slack-desc
-cat $CWD/doinst.sh > $PKG/install/doinst.sh
 
 mkdir -p $PKG/install
 cat $CWD/slack-desc > $PKG/install/slack-desc

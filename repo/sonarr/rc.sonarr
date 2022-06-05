@@ -7,85 +7,74 @@
 # ----------------------------------------------------------------------
 
 PRGNAM=sonarr
-SRVCNAM=Sonarr
-SONARR_USER=sonarr
-SONARR_GROUP=sonarr
+SRVCNAM=${PRGNAM^}
+SONARR_USER=%%SONARR_USER%%
+SONARR_GROUP=%%SONARR_GROUP%%
 DATA_DIR="/var/lib/$PRGNAM"
 DAEMON="/usr/bin/mono --debug /usr/lib/sonarr/Sonarr.exe"
 DAEMON_OPTS="-nobrowser -data=$DATA_DIR"
-PIDFILE=/var/run/$PRGNAM.pid
-
-start() {
-	# Check if already running
-	if pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then
-		echo "$PRGNAM appears to already be running."
-		exit 0;
-	fi
-
-	# Create working directory if it doesn't exist
-	if [ ! -d $DATA_DIR ]; then
-		mkdir -p $DATA_DIR
-	fi
-
-	# Take ownership of the working directory
-	chown -R $SONARR_USER:$SONARR_GROUP $DATA_DIR || exit 1
-		printf "Error setting ownership of %s\n." "$DATA_DIR."
-		exit 1
-
-	# Start the service
-	rm -f $PIDFILE
-	cd $DATA_DIR || exit 1
-	printf "Starting %s.\n" "$PRGNAM"
-	su -m $SONARR_USER -s /bin/bash -c \
-		"exec -a $SRVCNAM $DAEMON $DAEMON_OPTS &" >/dev/null 2>&1
-
-}
-
-stop() {
-	if ! pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then
-		printf "%s does not appear to be running.\n" "$PRGNAM"
-		exit 1
-	fi
-
-	printf "Stopping %s " "$PRGNAM"
-	kill -15 "$(cat $PIDFILE)"
-	wait=10
-	while [ $wait -gt 0 ]; do
-        printf "."
-		if ! pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then
-			rm -f $PIDFILE
-            printf " done.\n" 
-			exit 0
-		fi
-		sleep 1
-		(( wait -- ))
-	done
-
-	printf "\nError stopping %s.\n" "$PRGNAM."
-	exit 1
-}
-
-status () {
-	if pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then
-	    printf "%s running as process %s.\n" "$PRGNAM" "$(cat $PIDFILE)"
-    	else
-	    printf "%s is stopped.\n" "$PRGNAM"
-	fi
-}
+PIDFILE="$DATA_DIR/$PRGNAM.pid"
 
 case "$1" in
     start)
-	start
-	;;
+        # Check if already running
+        if pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then
+            printf "%s appears to already be running.\n" "$PRGNAM"
+            exit 0;
+        fi
+
+        # Create working directory if it doesn't exist
+        if [ ! -d $DATA_DIR ]; then
+            mkdir -p $DATA_DIR
+        fi
+
+        # Take ownership of the working directory
+        if ! chown -R $SONARR_USER:$SONARR_GROUP $DATA_DIR; then
+            printf "Error taking ownership of %s $DATA_DIR as %s:%s\n" \
+                "$DATA_DIR" "$SONARR_USER" "$SONARR_GROUP"
+                            exit 1
+        fi
+
+        # Start the service
+        rm -f $PIDFILE
+        cd $DATA_DIR || exit 1
+        printf "Starting %s.\n" "$PRGNAM"
+        su -m $SONARR_USER -s /bin/bash -c \
+            "exec -a $SRVCNAM $DAEMON $DAEMON_OPTS &" >/dev/null 2>&1
+        ;;
+
     stop)
-	stop
-	;;
+        if ! pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then
+            printf "%s does not appear to be running.\n" "$PRGNAM"
+            exit 1
+        fi
+
+        printf "Stopping %s..." "$PRGNAM"
+        kill -15 "$(cat $PIDFILE)"
+        wait=10
+        while [ $wait -gt 0 ]; do
+            if ! pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then
+                rm -f $PIDFILE
+                printf " Done.\n" 
+                exit 0
+            fi
+            sleep 1
+            (( wait -- ))
+        done
+        printf "\nError stopping %s.\n" "$PRGNAM."
+        exit 1
+        ;;
+
     status)
-    status
-	;;
+        if pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then
+            printf "%s running as process %s.\n" "$PRGNAM" "$(cat $PIDFILE)"
+        else
+            printf "%s is stopped.\n" "$PRGNAM"
+        fi
+        ;;
     *)
-	printf "Usage start|stop|status \n"
-	;;
+        printf "Usage start|stop|status \n"
+        ;;
 esac
 
 exit 0
