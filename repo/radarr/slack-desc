@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.
+# Line up the first '|' above the ':' following the base package name, and
+# the '|' on the right side marks the last column you can put a character in.
+# You must make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':' except on otherwise blank lines.
+
+      |-----handy-ruler------------------------------------------------------|
+radarr: radarr (Movie download automation for usenet and torrents.)
+radarr:
+radarr: Radarr is a movie collection manager for Usenet and BitTorrent users.
+radarr: It can monitor multiple RSS feeds for new movies and will interface
+radarr: with clients and indexers to grab, sort, and rename them. It can also
+radarr: be configured to automatically upgrade the quality of existing files
+radarr: in the library when a better quality format becomes available.
+radarr:
+radarr: Homepage <https://radarr.video>
+radarr:
+radarr:

@@ -1,0 +1,5 @@
+The built-in updater is disabled.
+If you prefer to use the updater,
+remove the file /usr/share/radarr/package_info,
+chown the directory /usr/share/radarr/bin to radarr and restart radarr.
+The built-in updater can now be configured in the Settings tab of radarr

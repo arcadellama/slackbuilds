@@ -1,0 +1,22 @@
+Radarr is a movie collection manager for Usenet and BitTorrent
+users. It can monitor multiple RSS feeds for new movies and will
+interface with clients and indexers to grab, sort, and rename them.
+It can also be configured to automatically upgrade the quality of
+existing files in the library when a better quality format becomes
+available.
+
+This package installs a daemon script at
+/etc/rc.d/rc.radarr
+
+The default init runs as radarr:radarr with its $HOME as
+/var/lib/radarr
+
+Example script to add a radarr user and group:
+
+    # useradd -r -m -d /var/lib/radarr -s /bin/false -U radarr
+
+It is recomended to have radarr in the same group as your
+download client(s). You can change the default user and group
+at build time:
+
+    # RADARR_USER=user RADARR_GROUP=group ./radarr.SlackBuild

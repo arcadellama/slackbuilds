@@ -1,0 +1,4 @@
+Branch=master
+UpdateMethod=External
+PackageAuthor=arcadellama@posteo.net
+UpdateMethodMessage=[slackbuilds.org](https://slackbuilds.org/repository/15.0/network/radarr/)
