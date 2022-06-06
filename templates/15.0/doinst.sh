@@ -61,4 +61,3 @@ chroot . /usr/bin/gio-querymodules @LIBDIR@/gio/modules/ 1> /dev/null 2> /dev/nu
 if [ -x /usr/bin/install-info ]; then
   chroot . /usr/bin/install-info --info-dir=/usr/info /usr/info/blah.gz 2> /dev/null
 fi
-
