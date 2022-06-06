@@ -1,0 +1,118 @@
+#!/bin/bash
+# ----------------------------------------------------------------------
+#
+# Slackware init script for Ombi:
+# /etc/rc.d/rc.ombi
+#
+# ----------------------------------------------------------------------
+
+PRGNAM=ombi
+SRVCNAM=Ombi
+OMBI_USER=ombi
+OMBI_GROUP=ombi
+DATA_DIR="/var/lib/$PRGNAM"
+DAEMON="/usr/lib/ombi/Ombi"
+DAEMON_OPTS="--storage $DATA_DIR --host http://*:5000"
+PIDFILE=/var/run/$PRGNAM.pid
+
+start() {
+	# Check if already running
+	if pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then
+		echo "$SRVCNAM appears to already be running."
+		exit 0;
+	fi
+
+	# Create working directory if it doesn't exist
+	if [ ! -d $DATA_DIR ]; then
+		mkdir -p $DATA_DIR
+		if [ $? -ne 0 ]; then
+			echo "Error creating $DATA_DIR."
+			exit 1
+		fi
+	fi
+
+	# Prepare working data directory
+	for link in {ClientApp,wwwroot,appsettings.json}; do
+		if [ ! -e $DATA_DIR/"$link" ]; then
+			cp -a /usr/lib/ombi/"$link" $DATA_DIR
+			if [ $? -ne 0 ]; then
+				echo "Error: could not prepare $DATA_DIR."
+				exit 1
+			fi
+		fi
+	done
+
+
+	# Take ownership of the working directory
+	chown -R $OMBI_USER:$OMBI_GROUP $DATA_DIR
+	if [ $? -ne 0 ]; then
+		echo "Error setting ownership of $DATA_DIR."
+		exit 1
+	fi
+
+	# Start the service
+	rm -f $PIDFILE
+	cd $DATA_DIR
+	echo "Starting $SRVCNAM"
+	su -m $OMBI_USER -s /bin/bash -c \
+		"exec -a $SRVCNAM $DAEMON $DAEMON_OPTS &" >/dev/null 2>&1
+
+	# Check that it worked
+	wait=10
+	while [ $wait -gt 0 ]; do
+		PID=$(pidof $SRVCNAM)
+		if [ $PID ]; then
+			echo $PID > $PIDFILE
+			exit 0
+		fi
+		sleep 1
+		(( wait -- ))
+	done
+
+	echo "Error starting $SRVCNAM."
+	exit 1
+
+}
+
+stop() {
+	if ! pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then
+		echo "$SRVCNAM does not appear to be running."
+		exit 1
+	fi
+
+	echo "Stopping $SRVCNAM"
+	kill -15 $(cat $PIDFILE)
+	wait=10
+	while [ $wait -gt 0 ]; do
+		if ! pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then
+			rm -f $PIDFILE
+			exit 0
+		fi
+		sleep 1
+		(( wait -- ))
+	done
+
+	echo "Error stopping $SRVCNAM."
+	exit 1
+}
+
+case "$1" in
+    start)
+	start
+	;;
+    stop)
+	stop
+	;;
+    status)
+	if pgrep -a -F $PIDFILE 2>/dev/null | grep -q $SRVCNAM; then
+	    echo "$SRVCNAM running as process $(cat $PIDFILE)"
+    	else
+	    echo "$SRVCNAM is stopped."
+	fi
+	;;
+    *)
+	echo "Usage start|stop|status"
+	;;
+esac
+
+exit 0

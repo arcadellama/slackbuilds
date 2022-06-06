@@ -1,6 +1,6 @@
-#!/bin/bash
+#!/bin/sh
 
-# Slackware build script for radarr
+# Slackware build script for nzbget
 
 # Copyright 2021 Justin Teague <arcadellama@posteo.net>
 # All rights reserved.
@@ -22,13 +22,10 @@
 #  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 #  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-cd $(dirname $0) ; CWD=$(pwd)
-
-PRGNAM=radarr
-VERSION=${VERSION:-4.1.0.6175}
+PRGNAM=nzbget
+VERSION=${VERSION:-21.1}
 BUILD=${BUILD:-1}
 TAG=${TAG:-_SBo}
-PKGTYPE=${PKGTYPE:-tgz}
 
 if [ -z "$ARCH" ]; then
   case "$( uname -m )" in
@@ -38,11 +35,7 @@ if [ -z "$ARCH" ]; then
   esac
 fi
 
-if [ ! -z "${PRINT_PACKAGE_NAME}" ]; then
-  echo "$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.$PKGTYPE"
-  exit 0
-fi
-
+CWD=$(pwd)
 TMP=${TMP:-/tmp/SBo}
 PKG=$TMP/package-$PRGNAM
 OUTPUT=${OUTPUT:-/tmp}
@@ -61,28 +54,14 @@ else
   LIBDIRSUFFIX=""
 fi
 
-RADARR_USER=${RADARR_USER:-$PRGNAM}
-RADARR_GROUP=${RADARR_GROUP:-$PRGNAM}
-
-set -e 
-
-if ! getent passwd $RADARR_USER 1>/dev/null 2>/dev/null; then
-    echo "You need to have a $RADARR_USER user to run this script."
-    echo 
-    echo "Either, create the user and group with:"
-    echo "    # useradd -r -m -d /var/lib/radarr -s /bin/false -U $RADARR_USER"
-    echo
-    echo "Or, re-run this script with the desired user:group,"
-    echo "    # RADARR_USER=user RADARR_GROUP=group ./radarr.SlackBuild"
-    exit 1
-fi
+set -e
 
 rm -rf $PKG
 mkdir -p $TMP $PKG $OUTPUT
 cd $TMP
-rm -rf ${PRGNAM^}
-tar xvf $CWD/${PRGNAM^}.master.$VERSION.linux-core-x64.tar.gz
-cd ${PRGNAM^}
+rm -rf $PRGNAM-$VERSION
+tar xvf $CWD/$PRGNAM-$VERSION.tar.gz
+cd $PRGNAM-$VERSION
 chown -R root:root .
 find -L . \
  \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
@@ -90,24 +69,38 @@ find -L . \
  \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
   -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
 
-rm -rf $PWD/${PRGNAM^}.Update
+CFLAGS="$SLKCFLAGS" \
+CXXFLAGS="$SLKCFLAGS" \
+./configure \
+  --prefix=/usr \
+  --sbindir='/usr/bin/' \
+  --sysconfdir=/etc \
+  --localstatedir=/var \
+  --mandir=/usr/man \
+  --docdir=/usr/doc/$PRGNAM-$VERSION \
+  --enable-parcheck \
+  --with-tlslib=OpenSSL \
+  --build=$ARCH-slackware-linux
 
-mkdir -p $PKG/usr/lib/$PRGNAM/bin
-cp -a $PWD/* $PKG/usr/lib/$PRGNAM/bin/
+make
+make DESTDIR=$PKG install
+make DESTDIR=$PKG install-conf
 
 find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
   | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
 
-mkdir -p $PKG/etc/rc.d
-cat $CWD/rc.$PRGNAM > $PKG/etc/rc.d/rc.$PRGNAM.new
-sed -i -e "s/%%RADARR_USER%%/$RADARR_USER/g" $PKG/etc/rc.d/rc.$PRGNAM.new
-sed -i -e "s/%%RADARR_GROUP%%/$RADARR_GROUP/g" $PKG/etc/rc.d/rc.$PRGNAM.new
-chmod 0644 $PKG/etc/rc.d/rc.$PRGNAM.new
+mkdir -p $PKG/var/lib/$PRGNAM
+sed -e "s|CertStore=.*|CertStore=/etc/ssl/ca-certificates.crt|g" \
+	$PKG/etc/$PRGNAM.conf > $PKG/var/lib/$PRGNAM/$PRGNAM.conf.new
+mv $PKG/etc/$PRGNAM.conf $PKG/etc/$PRGNAM.conf.new
 
-cat $CWD/package_info > $PKG/usr/lib/$PRGNAM/package_info
-echo "PackageVersion=$VERSION-$ARCH-$BUILD$TAG" >> $PKG/usr/lib/$PRGNAM/package_info
+mkdir -p $PKG/etc/rc.d
+mv $CWD/rc.$PRGNAM $PKG/etc/rc.d/rc.$PRGNAM.new
 
 mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+cp -a \
+    COPYING ChangeLog README  \
+    $PKG/usr/doc/$PRGNAM-$VERSION
 cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
 
 mkdir -p $PKG/install
@@ -115,4 +108,4 @@ cat $CWD/slack-desc > $PKG/install/slack-desc
 cat $CWD/doinst.sh > $PKG/install/doinst.sh
 
 cd $PKG
-/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.$PKGTYPE
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}

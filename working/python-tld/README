@@ -1,0 +1,5 @@
+Extract the top level domain (TLD) from the URL given. List of TLD
+names is taken from Public Suffix.
+
+Optionally raises exceptions on non-existing TLDs or silently fails 
+(if 'fail_silently' argument is set to True).

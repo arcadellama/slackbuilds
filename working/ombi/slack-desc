@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.
+# Line up the first '|' above the ':' following the base package name, and
+# the '|' on the right side marks the last column you can put a character in.
+# You must make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':' except on otherwise blank lines.
+
+    |-----handy-ruler------------------------------------------------------|
+ombi: ombi (Gives Plex or Emby users the ability to request content.) 
+ombi:
+ombi: Ombi is your friendly media request tool, automatically syncs with
+ombi: your media with your media servers.
+ombi:
+ombi: Homepage <https://github.com/Ombi-app/Ombi>
+ombi:
+ombi:
+ombi:
+ombi:
+ombi:

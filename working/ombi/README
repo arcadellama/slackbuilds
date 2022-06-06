@@ -1,0 +1,6 @@
+Ombi is your friendly media request tool, automatically syncs with
+your media with your media servers!
+
+You'll want to create a ombi user in order to run with the provided init
+script:
+

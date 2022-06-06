@@ -5,7 +5,7 @@ automatically upgrade the quality of files already downloaded when
 a better quality format becomes available.
 
 This package installs a daemon script at
-/etc/rc.d/rc.sonar
+/etc/rc.d/rc.sonarr
 
 The default init runs as sonarr:sonarr with its $HOME as
 /var/lib/sonarr

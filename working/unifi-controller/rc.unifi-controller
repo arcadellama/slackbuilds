@@ -1,0 +1,115 @@
+#!/bin/sh
+# ----------------------------------------------------------------------
+# Slackware init script for UniFi Controller:
+# /etc/rc.d/rc.unifi-controller
+# ----------------------------------------------------------------------
+
+PRGNAM=unifi-controller
+SERVICE_NAME="UniFi Controller"
+UNIFI_USER=@UNIFI_USER@
+UNIFI_GROUP=@UNIFI_GROUP@
+SHELL=/bin/bash
+JAVA=$(which java)
+BIN_DIR=/usr/lib/$PRGNAM
+DATA_DIR=/var/lib/$PRGNAM
+JAR=$BIN_DIR/lib/ace.jar
+MEM_LIMIT=1024M
+PIDFILE=$DATA_DIR/run/mongod.pid
+
+start() {
+    if [ ! -d $DATA_DIR ]; then
+	mkdir -p $DATA_DIR
+	if [ $? -ne 0 ]; then
+	    echo "Error creating $DATA_DIR."
+	fi
+    fi
+
+    for i in {data,logs,run,work}; do
+	if [ ! -d $DATA_DIR/"$i" ]; then
+	    mkdir -p $DATA_DIR/"$i"
+	    if [ $? -ne 0 ]; then
+		    echo "Error initializing $DATA_DIR/$i"
+		    exit 1
+	    fi
+	fi
+
+    chown -R $UNIFI_USER:$UNIFI_GROUP $DATA_DIR
+    if [ $? -ne 0 ]; then
+	echo "Error changing ownership on $DATA_DIR."
+	exit 1
+    fi
+
+	if [ ! -L $BIN_DIR/"$i" ]; then
+	    ln -s $DATA_DIR/"$i" $BIN_DIR/"$i"
+	    if [ $? -ne 0 ]; then
+		    echo "Error linking $DATA_DIR/$i"
+		    exit 1
+	    fi
+	fi
+    done
+
+    if pgrep -l -F $PIDFILE 2>/dev/null | grep -q mongod; then
+	echo "$SERVICE_NAME is already running"
+    fi
+    echo "Starting $SERVICE_NAME: "
+    cd $DATA_DIR
+    su -l $UNIFI_USER -s $SHELL \
+	    -c "$JAVA -Xmx$MEM_LIMIT -jar $JAR start &> /dev/null &"
+    wait=15
+    while [ $wait -gt 0 ]; do
+	    if pgrep -l -F $PIDFILE 2>/dev/null | grep -q mongod; then
+		    exit 0
+	    else
+		    sleep 1
+		    (( wait-- ))
+	    fi
+    done
+    echo "Error."
+    exit 1
+}
+
+stop() {
+    if pgrep -l -F $PIDFILE 2>/dev/null | grep -q mongod; then
+	echo "Stopping $SERVICE_NAME: "
+	cd $DATA_DIR
+	su -l $UNIFI_USER -s $SHELL \
+	    -c "$JAVA -jar $JAR stop &> /dev/null"
+	wait=15
+	while [ $wait -gt 0 ]; do
+	if ! pgrep -l -F $PIDFILE 2>/dev/null | grep -q mongod; then
+		exit 0
+	else
+		sleep 1
+		(( wait++ ))
+	fi
+        done
+	echo "Error stopping $SERVICE_NAME."
+	exit 1
+    else
+	echo "$SERVICE_NAME is not running"
+	exit 1
+    fi
+}
+
+case $1 in
+  start)
+    start
+  ;;
+  stop)
+    stop
+  ;;
+  status)
+    if pgrep -l -F $PIDFILE 2>/dev/null | grep -q mongod; then
+	echo "$SERVICE_NAME running as process $(cat $PIDFILE)"
+    else
+      echo "$SERVICE_NAME is not running"
+    fi
+  ;;
+*)
+
+echo "usage: {start|stop|status}"
+exit 1
+;;
+
+esac
+exit 0

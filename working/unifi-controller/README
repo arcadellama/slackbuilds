@@ -1,0 +1,21 @@
+UniFi Network Controller is a centralized management system
+for Ubiquiti UniFi products.
+
+The default user is set to 'nobody.' You'll want to change
+this by passing:
+
+UNIFI_USER=user UNIFI_GROUP=group ./unifi-controller.SlackBuild
+
+If you want to start at boot, add the following to
+/etc/rc.d/rc.local:
+
+if [ -x /etc/rc.d/rc.unifi-controller ]; then
+    /etc/rc.d/rc./unifi-controller start
+fi
+
+And the following to /etc/rc.d/rc.local_shutdown:
+
+if [ -x /etc/rc.d/rc.unifi-controller ]; then
+    /etc/rc.d/rc./unifi-controller stop
+fi
+

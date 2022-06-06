@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.
+# Line up the first '|' above the ':' following the base package name, and
+# the '|' on the right side marks the last column you can put a character in.
+# You must make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':' except on otherwise blank lines.
+
+      |-----handy-ruler------------------------------------------------------|
+lidarr: lidarr (a music collection manager.)
+lidarr:
+lidarr: Lidarr is a music collection manager for Usenet and BitTorrent users.
+lidarr: It can monitor multiple RSS feeds for new albums from your favorite
+lidarr: artists and will interface with clients and indexers to grab, sort,
+lidarr: and rename them. It can also be configured to automatically upgrade
+lidarr: the quality of existing files in the library when a better quality
+lidarr: format becomes available.lidarr:
+lidarr:
+lidarr: Homepage <https://lidarr.audio>
+lidarr:
