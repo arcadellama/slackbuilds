@@ -1,7 +1,7 @@
 PRGNAM="radarr"
 VERSION="4.1.0.6175"
 HOMEPAGE="https://radarr.video/"
-DOWNLOAD=""
+DOWNLOAD="UNSUPPORTED"
 MD5SUM=""
 DOWNLOAD_x86_64="https://github.com/Radarr/Radarr/releases/download/v4.1.0.6175/Radarr.master.4.1.0.6175.linux-core-x64.tar.gz"
 MD5SUM_x86_64="94bfaafa5cadd1a814d5129d7e8a7116"

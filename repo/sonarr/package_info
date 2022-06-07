@@ -1,4 +1,4 @@
-Branch=main
+PackageAuthor=[sonarr](https://slackbuilds.org/repository/15.0/network/sonarr)
 UpdateMethod=External
-PackageAuthor=arcadellama@posteo.net
-UpdateMethodMessage=[slackbuilds.org](https://slackbuilds.org/repository/15.0/network/sonarr/)
+UpdateMethodMessage=[sonarr](https://slackbuilds.org/repository/15.0/network/sonarr)
+Branch=main
