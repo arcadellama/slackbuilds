@@ -6,14 +6,14 @@
 # customary to leave one space after the ':' except on otherwise blank lines.
 
       |-----handy-ruler------------------------------------------------------|
-nzbget: nzbget (Efficient Usenet Downloader)
+nzbget: nzbget (a binary downloader)
 nzbget:
-nzbget: NZBGet is a binary downloader, which downloads files from Usenet
-nzbget: based on information given in nzb-files.
-nzbget: 
-nzbget: NZBGet is written in C++ and is known for its extraordinary
-nzbget: performance and efficiency.
+nzbget: NZBGet is a binary newsgrabber for nzb files,
+nzbget: written in C++. It supports client/server mode, automatic
+nzbget: par-check/-repair and web-interface. NZBGet
+nzbget: requires low system resources and runs great on routers, NAS-devices
+nzbget: and media players.
 nzbget:
+nzbget: Homepage: https://github.com/nzbget/nzbget
 nzbget:
-nzbget: Homepage: <https://http://nzbget.net/>
 nzbget:

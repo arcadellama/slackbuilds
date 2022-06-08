@@ -1,22 +1,42 @@
-#!/bin/bash
+#!/usr/bin/bash
 # ----------------------------------------------------------------------
-#
 # Slackware init script for Sonarr:
 # /etc/rc.d/rc.sonarr
+#
+# Copyright 2022, Justin Teague <arcadellama@posteo.net>
+#
+# PERMISSION IS HEREBY GRANTED, FREE OF CHARGE, TO ANY PERSON OBTAINING A
+# COPY OF THIS SOFTWARE AND ASSOCIATED DOCUMENTATION FILES (THE “SOFTWARE”)
+# TO DEAL IN THE SOFTWARE WITHOUT RESTRICTION, INCLUDING WITHOUT LIMITATION
+# THE RIGHTS TO USE, COPY, MODIFY, MERGE, PUBLISH, DISTRIBUTE, SUBLICENSE,
+# AND/OR SELL COPIES OF THE SOFTWARE, AND TO PERMIT PERSONS TO WHOM THE
+# SOFTWARE IS FURNISHED TO DO SO, SUBJECT TO THE FOLLOWING CONDITIONS:
+#
+# THE ABOVE COPYRIGHT NOTICE AND THIS PERMISSION NOTICE SHALL BE INCLUDED IN
+# ALL COPIES OR SUBSTANTIAL PORTIONS OF THE SOFTWARE.
+#
+# THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL 
+# THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR 
+# OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE 
+# ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+# OTHER DEALINGS IN THE SOFTWARE.
 #
 # ----------------------------------------------------------------------
 
 PRGNAM="nzbget"
-NZBGET_USER=${NZBGET_USER:-$PRGNAM}
-NZBGET_GROUP=${NZBGET_GROUP:-$PRGNAM}
-
-DATADIR="/var/lib/$PRGNAM"
-CONF="$DATADIR/$PRGNAM.conf"
+NZBGET_USER=${NZBGET_USER:-%%NZBGET_USER%%}
+NZBGET_GROUP=${NZBGET_GROUP:-%%NZBGET_GROUP%%}
+DATA_DIR=${DATA_DIR:-%%DATA_DIR%%}
+CONF_FILE="$DATA_DIR/$PRGNAM.conf"
 DAEMON="/usr/bin/$PRGNAM"
-DAEMON_OPTS="-c $CONF"
+DAEMON_OPTS="-c $CONF_FILE"
+DAEMON_EXEC="/bin/su -l $NZBGET_USER /usr/bin/bash -c"
 
 running() {
-    __pidfile=$(su -l nzbget bash -c ''$DAEMON' -p | grep LockFile | cut -d = -f2 | tr -d \"" "')
+    __pidfile=$(su -l nzbget bash -c \
+        ''$DAEMON' -p | grep LockFile | cut -d = -f2 | tr -d \"" "')
     /usr/bin/pgrep -F $__pidfile &> /dev/null
     return $?
 }
@@ -24,46 +44,67 @@ running() {
 case $1 in
     start)
 
+        # Check if running
         if running; then
             echo "$PRGNAM is already running."
             exit 0
         fi
         
-        if [ ! -d $DATADIR ]; then
-            mkdir -p $DATADIR
+        # Check for data directory
+        if [ ! -d $DATA_DIR ]; then
+            mkdir -p $DATA_DIR
         fi
 
-        if [ ! -f $CONF ]; then
-            cp -a /etc/$PRGNAM.conf $DATADIR/$PRGNAM.conf
+        # Copy over default config file
+        if [ ! -f $CONF_FILE ]; then
+            cat /etc/$PRGNAM.conf > $DATA_DIR/$PRGNAM.conf
         fi
 
-        chown -R $NZBGET_USER:$NZBGET_GROUP $DATADIR
+        # Take ownership of the data directory
+        chown -R $NZBGET_USER:$NZBGET_GROUP $DATA_DIR
 
+        # Start daemon
         echo "Starting $PRGNAM."
-        su -l $NZBGET_USER bash -c "exec $DAEMON $DAEMON_OPTS -D"
-        
+        $DAEMON_EXEC $DAEMON $DAEMON_OPTS -D
         ;;
 
     stop)
+
+        # Check if running
         if ! running; then
             echo "$PRGNAM is not running."
             exit 0
         fi
 
-        su -l $NZBGET_USER bash -c "exec $DAEMON $DAEMON_OPTS -Q"
+        # Stop daemon
+        $DAEMON_EXEC $DAEMON $DAEMON_OPTS -Q
+        ;;
 
+    reload)
+
+        # Check if running
+        if ! running; then
+            echo "$PRGNAM is not running."
+            exit 0
+        fi
+
+        # Reload daemon
+        $DAEMON_EXEC $DAEMON $DAEMON_OPTS -O
         ;;
 
     status)
+
+        # Check if running
         if running; then
             echo "$PRGNAM is running."
             exit 0
         else
             echo "$PRGNAM is not running."
+            exit 0
         fi
         ;;
 
     *)
-        echo "Usage: $0 start|stop|status"
+        echo "Usage: $0 start|stop|reload|status"
         ;;
 esac
