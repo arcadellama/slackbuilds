@@ -65,6 +65,9 @@ else
   LIBDIRSUFFIX=""
 fi
 
+NZBGET_USER=${NZBGET_USER:-root}
+NZBGET_GROUP=${NZBGET_GROUP:-root}
+
 set -e
 
 rm -rf $PKG
@@ -107,6 +110,9 @@ mv $PKG/etc/$PRGNAM.conf $PKG/etc/$PRGNAM.conf.new
 
 mkdir -p $PKG/etc/rc.d
 cat $CWD/rc.$PRGNAM > $PKG/etc/rc.d/rc.$PRGNAM.new
+sed -i -e "s/%%NZBGET_USER%%/$NZBGET_USER/g" $PKG/etc/rc.d/rc.$PRGNAM.new
+sed -i -e "s/%%NZBGET_GROUP%%/$NZBGET_GROUP/g" $PKG/etc/rc.d/rc.$PRGNAM.new
+chmod 0644 $PKG/etc/rc.d/rc.$PRGNAM.new
 
 mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
 cp -a \

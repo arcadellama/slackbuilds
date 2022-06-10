@@ -28,14 +28,14 @@
 PRGNAM="nzbget"
 NZBGET_USER=${NZBGET_USER:-%%NZBGET_USER%%}
 NZBGET_GROUP=${NZBGET_GROUP:-%%NZBGET_GROUP%%}
-DATA_DIR=${DATA_DIR:-%%DATA_DIR%%}
+DATA_DIR=${DATA_DIR:-/var/lib/$PRGNAM}
 CONF_FILE="$DATA_DIR/$PRGNAM.conf"
 DAEMON="/usr/bin/$PRGNAM"
 DAEMON_OPTS="-c $CONF_FILE"
 DAEMON_EXEC="/bin/su -l $NZBGET_USER /usr/bin/bash -c"
 
 running() {
-    __pidfile=$(su -l $NZBGET_USER bash -c \
+    __pidfile=$(su -l nzbget bash -c \
         ''$DAEMON' -p | grep LockFile | cut -d = -f2 | tr -d \"" " 2>/dev/null')
     /usr/bin/pgrep -F $__pidfile &> /dev/null
     return $?
@@ -43,7 +43,6 @@ running() {
 
 case $1 in
     start)
-
         # Check if running
         if running; then
             echo "$PRGNAM is already running."

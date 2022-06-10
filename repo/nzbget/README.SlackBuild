@@ -1,11 +1,12 @@
 This package installs an optional daemon script at:
-/etc/rc.d/rc.sonarr
+/etc/rc.d/rc.nzbget
 
-The default init runs as sonarr:sonarr with its data directory as:
-/var/lib/sonarr
+The default init runs as root:root with its data directory as:
+/var/lib/nzbget
 
-You can edit the init file directly, or you can change the default
+You probably want to change this.
+Edit the init file directly, or you can change the default
 user and group at build time:
     
-    # NZBGET_USER=user NZBGET_GROUP=group DATA_DIR=/path/to/dir \
+    # NZBGET_USER=user NZBGET_GROUP=group \
         ./nzbget.SlackBuild
