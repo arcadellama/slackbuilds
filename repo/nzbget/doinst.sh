@@ -22,5 +22,5 @@ preserve_perms() {
   config $NEW
 }
 
-config etc/nzbget.conf.new
 preserve_perms etc/rc.d/rc.nzbget.new
+config etc/nzbget.conf.new

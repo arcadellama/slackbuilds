@@ -65,10 +65,6 @@ else
   LIBDIRSUFFIX=""
 fi
 
-NZBGET_USER=${NZBGET_USER:-$PRGNAM}
-NZBGET_GROUP=${NZBGET_GROUP:-$PRGNAM}
-DATA_DIR=${DATA_DIR:-/var/lib/$PRGNAM}
-
 set -e
 
 rm -rf $PKG
@@ -88,6 +84,7 @@ CFLAGS="$SLKCFLAGS" \
 CXXFLAGS="$SLKCFLAGS" \
 ./configure \
   --prefix=/usr \
+  --sbindir='/usr/bin/' \
   --sysconfdir=/etc \
   --localstatedir=/var \
   --mandir=/usr/man \
@@ -97,23 +94,19 @@ CXXFLAGS="$SLKCFLAGS" \
   --build=$ARCH-slackware-linux
 
 make
-make install DESTDIR=$PKG
+make DESTDIR=$PKG install
 make DESTDIR=$PKG install-conf
 
-find $PKG -print0 | xargs -0 file \
-    | grep -e "executable" -e "shared object" | grep ELF \
-    | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
+find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
+  | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
+
+sed -i -e "s|CertStore=.*|CertStore=/etc/ssl/ca-certificates.crt|g" \
+	$PKG/etc/$PRGNAM.conf
+
+mv $PKG/etc/$PRGNAM.conf $PKG/etc/$PRGNAM.conf.new
 
 mkdir -p $PKG/etc/rc.d
-sed -e "s/%%NZBGET_USER%%/$NZBGET_USER/g"; \
-    sed -e "s/%%NZBGET_GROUP%%/$NZBGET_GROUP/g"; \
-    sed -e "s/%%DATA_DIR%%/$DATA_DIR/g" \
-    $CWD/rc.$PRGNAM > $PKG/etc/rc.d/rc.$PRGNAM.new
-
-chmod 0644 $PKG/etc/rc.d/rc.$PRGNAM.new
-
-sed -e "s|CertStore=.*|CertStore=/etc/ssl/ca-certificates.crt|g" \
-	$PKG/etc/$PRGNAM.conf > $PKG/etc/$PRGNAM.conf.new
+cat $CWD/rc.$PRGNAM > $PKG/etc/rc.d/rc.$PRGNAM.new
 
 mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
 cp -a \
